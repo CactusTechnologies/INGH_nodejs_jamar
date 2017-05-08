@@ -4,7 +4,7 @@
 'use strict';
 // const bluebirdChecks = require('./bluebirdChecks');
 const assert = require('assert');
-const k = require('../openBCIConstants');
+const k = require('../jamarConstants');
 const chai = require('chai');
 const expect = chai.expect;
 const should = chai.should(); // eslint-disable-line no-unused-vars
@@ -31,7 +31,7 @@ var getListOfPeripheralsOfSize = (perifsToMake) => {
 };
 
 var makeLocalName = (num) => {
-  let localName = `${k.OBCIGanglionPrefix}-00`;
+  let localName = `${k.OBCIJamarPrefix}-00`;
   if (num < 10) {
     localName = `${localName}0${num}`;
   } else {
@@ -200,13 +200,13 @@ describe('OpenBCIConstants', function () {
   });
   describe('Accel packet numbers', function () {
     it('X axis', function () {
-      assert.equal(1, k.OBCIGanglionAccelAxisX);
+      assert.equal(1, k.OBCIJamarAccelAxisX);
     });
     it('Y axis', function () {
-      assert.equal(2, k.OBCIGanglionAccelAxisY);
+      assert.equal(2, k.OBCIJamarAccelAxisY);
     });
     it('Z axis', function () {
-      assert.equal(3, k.OBCIGanglionAccelAxisZ);
+      assert.equal(3, k.OBCIJamarAccelAxisZ);
     });
   });
   describe('Miscellaneous', function () {
@@ -273,8 +273,8 @@ describe('OpenBCIConstants', function () {
     });
   });
   describe('Number of channels', function () {
-    it('Ganglion', function () {
-      assert.equal(4, k.OBCINumberOfChannelsGanglion);
+    it('Jamar', function () {
+      assert.equal(4, k.OBCINumberOfChannelsJamar);
     });
   });
   describe('Possible Sample Rates', function () {
@@ -306,8 +306,8 @@ describe('OpenBCIConstants', function () {
     it('Event Emitter Error', function () {
       assert.equal('error', k.OBCIEmitterError);
     });
-    it('Event Emitter Ganglion Found', function () {
-      assert.equal('ganglionFound', k.OBCIEmitterGanglionFound);
+    it('Event Emitter Jamar Found', function () {
+      assert.equal('jamarFound', k.OBCIEmitterJamarFound);
     });
     it('Event Emitter Impedance', function () {
       assert.equal('impedance', k.OBCIEmitterImpedance);
@@ -329,23 +329,23 @@ describe('OpenBCIConstants', function () {
     });
   });
   describe('General', function () {
-    it('Ganglion prefix', function () {
-      assert.equal('Ganglion', k.OBCIGanglionPrefix);
+    it('Jamar prefix', function () {
+      assert.equal('Jamar', k.OBCIJamarPrefix);
     });
-    it('Ganglion ble search time', function () {
-      assert.equal(0.032, k.OBCIGanglionAccelScaleFactor);
+    it('Jamar ble search time', function () {
+      assert.equal(0.032, k.OBCIJamarAccelScaleFactor);
     });
-    it('Ganglion ble search time', function () {
-      assert.equal(20000, k.OBCIGanglionBleSearchTime);
+    it('Jamar ble search time', function () {
+      assert.equal(20000, k.OBCIJamarBleSearchTime);
     });
     it('packet size', function () {
-      assert.equal(20, k.OBCIGanglionPacketSize);
+      assert.equal(20, k.OBCIJamarPacketSize);
     });
     it('samples per packet', function () {
-      assert.equal(2, k.OBCIGanglionSamplesPerPacket);
+      assert.equal(2, k.OBCIJamarSamplesPerPacket);
     });
     it('packet positions 18 bit', function () {
-      expect(k.OBCIGanglionPacket18Bit).to.deep.equal({
+      expect(k.OBCIJamarPacket18Bit).to.deep.equal({
         auxByte: 20,
         byteId: 0,
         dataStart: 1,
@@ -353,7 +353,7 @@ describe('OpenBCIConstants', function () {
       });
     });
     it('packet positions 19 bit', function () {
-      expect(k.OBCIGanglionPacket19Bit).to.deep.equal({
+      expect(k.OBCIJamarPacket19Bit).to.deep.equal({
         byteId: 0,
         dataStart: 1,
         dataStop: 20
@@ -362,54 +362,54 @@ describe('OpenBCIConstants', function () {
   });
   describe('Commands', function () {
     it('Synthetic data mode enable', function () {
-      assert.equal('t', k.OBCIGanglionSyntheticDataEnable);
+      assert.equal('t', k.OBCIJamarSyntheticDataEnable);
     });
     it('Synthetic data mode disable', function () {
-      assert.equal('T', k.OBCIGanglionSyntheticDataDisable);
+      assert.equal('T', k.OBCIJamarSyntheticDataDisable);
     });
     it('Impedance start', function () {
-      assert.equal('z', k.OBCIGanglionImpedanceStart);
+      assert.equal('z', k.OBCIJamarImpedanceStart);
     });
     it('Impedance stop', function () {
-      assert.equal('Z', k.OBCIGanglionImpedanceStop);
+      assert.equal('Z', k.OBCIJamarImpedanceStop);
     });
   });
   describe('Byte Id', function () {
     it('Uncompressed', function () {
-      assert.equal(0, k.OBCIGanglionByteIdUncompressed);
+      assert.equal(0, k.OBCIJamarByteIdUncompressed);
     });
     it('should have correct values for 18 bit', function () {
-      expect(k.OBCIGanglionByteId18Bit).to.deep.equal({
+      expect(k.OBCIJamarByteId18Bit).to.deep.equal({
         max: 100,
         min: 1
       })
     });
     it('should have correct values for 18 bit', function () {
-      expect(k.OBCIGanglionByteId19Bit).to.deep.equal({
+      expect(k.OBCIJamarByteId19Bit).to.deep.equal({
         max: 200,
         min: 101
       })
     });
     it('Impedance channel 1', function () {
-      assert.equal(201, k.OBCIGanglionByteIdImpedanceChannel1);
+      assert.equal(201, k.OBCIJamarByteIdImpedanceChannel1);
     });
     it('Impedance channel 2', function () {
-      assert.equal(202, k.OBCIGanglionByteIdImpedanceChannel2);
+      assert.equal(202, k.OBCIJamarByteIdImpedanceChannel2);
     });
     it('Impedance channel 3', function () {
-      assert.equal(203, k.OBCIGanglionByteIdImpedanceChannel3);
+      assert.equal(203, k.OBCIJamarByteIdImpedanceChannel3);
     });
     it('Impedance channel 4', function () {
-      assert.equal(204, k.OBCIGanglionByteIdImpedanceChannel4);
+      assert.equal(204, k.OBCIJamarByteIdImpedanceChannel4);
     });
     it('Impedance channel reference', function () {
-      assert.equal(205, k.OBCIGanglionByteIdImpedanceChannelReference);
+      assert.equal(205, k.OBCIJamarByteIdImpedanceChannelReference);
     });
     it('Multi packet', function () {
-      assert.equal(206, k.OBCIGanglionByteIdMultiPacket);
+      assert.equal(206, k.OBCIJamarByteIdMultiPacket);
     });
     it('Multi packet stop', function () {
-      assert.equal(207, k.OBCIGanglionByteIdMultiPacketStop);
+      assert.equal(207, k.OBCIJamarByteIdMultiPacketStop);
     });
   });
   describe('simblee', function () {
@@ -497,35 +497,35 @@ describe('OpenBCIConstants', function () {
       k.getPeripheralWithLocalName(badName).should.be.rejected.and.notify(done);
     });
   });
-  describe('#isPeripheralGanglion', function () {
+  describe('#isPeripheralJamar', function () {
     it('should return true when proper localName', function () {
       let list = getListOfPeripheralsOfSize(1);
       let perif = list[0];
-      expect(k.isPeripheralGanglion(perif)).to.equal(true);
+      expect(k.isPeripheralJamar(perif)).to.equal(true);
     });
     it('should return false when incorrect localName', function () {
       let list = getListOfPeripheralsOfSize(1);
       let perif = list[0];
       perif.advertisement.localName = 'burrito';
-      expect(k.isPeripheralGanglion(perif)).to.equal(false);
+      expect(k.isPeripheralJamar(perif)).to.equal(false);
     });
     it('should return false when bad object', function () {
-      expect(k.isPeripheralGanglion({})).to.equal(false);
+      expect(k.isPeripheralJamar({})).to.equal(false);
     });
     it('should return false if nothing input', function () {
-      expect(k.isPeripheralGanglion()).to.equal(false);
+      expect(k.isPeripheralJamar()).to.equal(false);
     });
     it('should return false if undfined unput input', function () {
       let list = getListOfPeripheralsOfSize(1);
       let perif = list[0];
       perif.advertisement.localName = undefined;
-      expect(k.isPeripheralGanglion(perif)).to.equal(false);
+      expect(k.isPeripheralJamar(perif)).to.equal(false);
     });
     it('should return false when missing advertisement object', function () {
       let list = getListOfPeripheralsOfSize(1);
       let perif = list[0];
       perif.advertisement = null;
-      expect(k.isPeripheralGanglion(perif)).to.equal(false);
+      expect(k.isPeripheralJamar(perif)).to.equal(false);
     });
   });
 });

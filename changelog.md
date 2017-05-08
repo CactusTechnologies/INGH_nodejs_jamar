@@ -64,7 +64,7 @@
 # 0.3.0
 
 ### New Features
-* Get accelerometer data from the ganglion! (Previous did not work while streaming)
+* Get accelerometer data from the jamar! (Previous did not work while streaming)
 
 ### Breaking Changes
 * Major change in how bytes are parse based on byte ID.
@@ -80,7 +80,7 @@
 * Reworked dropped packet detection and emit of packets.
 
 ### Bug Fixes
-* Fix bug where ganglionServer example would hang on scan if no board found.
+* Fix bug where jamarServer example would hang on scan if no board found.
 * Fix bug where node process would not disconnect on windows.
 * Fix unhandled promise where server would call search start twice.
 

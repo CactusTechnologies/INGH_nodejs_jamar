@@ -4,23 +4,13 @@ const _ = require('lodash');
 let noble;
 const util = require('util');
 // Local imports
-const ganglionSample = require('./openBCIGanglionSample');
-const k = require('./openBCIConstants');
-const openBCIUtils = require('./openBCIUtils');
+const k = require('./jamarConstants');
 const clone = require('clone');
 
 const _options = {
   debug: false,
   nobleAutoStart: true,
   nobleScanOnPowerOn: true,
-  sendCounts: false,
-  simulate: false,
-  simulatorBoardFailure: false,
-  simulatorHasAccelerometer: true,
-  simulatorInternalClockDrift: 0,
-  simulatorInjectAlpha: true,
-  simulatorInjectLineNoise: [k.OBCISimulatorLineNoiseHz60, k.OBCISimulatorLineNoiseHz50, k.OBCISimulatorLineNoiseNone],
-  simulatorSampleRate: 200,
   verbose: false
 };
 
@@ -32,7 +22,7 @@ const _options = {
  *     - `nobleAutoStart` {Boolean} - Automatically initialize `noble`. Subscribes to blue tooth state changes and such.
  *           (Default `true`)
  *
- *     - `nobleScanOnPowerOn` {Boolean} - Start scanning for Ganglion BLE devices as soon as power turns on.
+ *     - `nobleScanOnPowerOn` {Boolean} - Start scanning for Jamar BLE devices as soon as power turns on.
  *           (Default `true`)
  *
  *     - `sendCounts` {Boolean} - Send integer raw counts instead of scaled floats.
@@ -62,11 +52,11 @@ const _options = {
  * @param callback {function} (optional) - A callback function used to determine if the noble module was able to be started.
  *    This can be very useful on Windows when there is no compatible BLE device found.
  * @constructor
- * @author AJ Keller (@pushtheworldllc)
+ * @author Aaron Arntz
  */
-function Ganglion (options, callback) {
-  if (!(this instanceof Ganglion)) {
-    return new Ganglion(options, callback);
+function Jamar (options, callback) {
+  if (!(this instanceof Jamar)) {
+    return new Jamar(options, callback);
   }
 
   if (options instanceof Function) {
@@ -119,7 +109,7 @@ function Ganglion (options, callback) {
   this._lastPacket = null;
   this._localName = null;
   this._multiPacketBuffer = null;
-  this._packetCounter = k.OBCIGanglionByteId18Bit.max;
+  this._packetCounter = k.OBCIJamarByteId18Bit.max;
   this._peripheral = null;
   this._rfduinoService = null;
   this._receiveCharacteristic = null;
@@ -129,7 +119,7 @@ function Ganglion (options, callback) {
 
   /** Public Properties (keep alphabetical) */
   this.peripheralArray = [];
-  this.ganglionPeripheralArray = [];
+  this.jamarPeripheralArray = [];
   this.previousPeripheralArray = [];
   this.manualDisconnect = false;
 
@@ -148,14 +138,14 @@ function Ganglion (options, callback) {
 }
 
 // This allows us to use the emitter class freely outside of the module
-util.inherits(Ganglion, EventEmitter);
+util.inherits(Jamar, EventEmitter);
 
 /**
  * Used to enable the accelerometer. Will result in accelerometer packets arriving 10 times a second.
  *  Note that the accelerometer is enabled by default.
  * @return {Promise}
  */
-Ganglion.prototype.accelStart = function () {
+Jamar.prototype.accelStart = function () {
   return this.write(k.OBCIAccelStart);
 };
 
@@ -163,14 +153,14 @@ Ganglion.prototype.accelStart = function () {
  * Used to disable the accelerometer. Prevents accelerometer data packets from arriving.
  * @return {Promise}
  */
-Ganglion.prototype.accelStop = function () {
+Jamar.prototype.accelStop = function () {
   return this.write(k.OBCIAccelStop);
 };
 
 /**
  * Used to start a scan if power is on. Useful if a connection is dropped.
  */
-Ganglion.prototype.autoReconnect = function () {
+Jamar.prototype.autoReconnect = function () {
   // TODO: send back reconnect status, or reconnect fail
   if (noble.state === k.OBCINobleStatePoweredOn) {
     this._nobleScanStart();
@@ -185,7 +175,7 @@ Ganglion.prototype.autoReconnect = function () {
  * @returns {Promise.<T>}
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.channelOff = function (channelNumber) {
+Jamar.prototype.channelOff = function (channelNumber) {
   return k.commandChannelOff(channelNumber).then((charCommand) => {
     // console.log('sent command to turn channel ' + channelNumber + ' by sending command ' + charCommand)
     return this.write(charCommand);
@@ -198,7 +188,7 @@ Ganglion.prototype.channelOff = function (channelNumber) {
  * @returns {Promise.<T>|*}
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.channelOn = function (channelNumber) {
+Jamar.prototype.channelOn = function (channelNumber) {
   return k.commandChannelOn(channelNumber).then((charCommand) => {
     // console.log('sent command to turn channel ' + channelNumber + ' by sending command ' + charCommand)
     return this.write(charCommand);
@@ -207,15 +197,15 @@ Ganglion.prototype.channelOn = function (channelNumber) {
 
 /**
  * @description The essential precursor method to be called initially to establish a
- *              ble connection to the OpenBCI ganglion board.
+ *              ble connection to the OpenBCI jamar board.
  * @param id {String | Object} - a string local name or peripheral object
  * @returns {Promise} If the board was able to connect.
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.connect = function (id) {
+Jamar.prototype.connect = function (id) {
   return new Promise((resolve, reject) => {
     if (_.isString(id)) {
-      k.getPeripheralWithLocalName(this.ganglionPeripheralArray, id)
+      k.getPeripheralWithLocalName(this.jamarPeripheralArray, id)
         .then((p) => {
           return this._nobleConnect(p);
         })
@@ -234,14 +224,14 @@ Ganglion.prototype.connect = function (id) {
 /**
  * Destroys the noble!
  */
-Ganglion.prototype.destroyNoble = function () {
+Jamar.prototype.destroyNoble = function () {
   this._nobleDestroy();
 };
 
 /**
  * Destroys the multi packet buffer.
  */
-Ganglion.prototype.destroyMultiPacketBuffer = function () {
+Jamar.prototype.destroyMultiPacketBuffer = function () {
   this._multiPacketBuffer = null;
 };
 
@@ -252,7 +242,7 @@ Ganglion.prototype.destroyMultiPacketBuffer = function () {
  * @returns {Promise} - fulfilled by a successful close, rejected otherwise.
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.disconnect = function (stopStreaming) {
+Jamar.prototype.disconnect = function (stopStreaming) {
   // no need for timeout here; streamStop already performs a delay
   return Promise.resolve()
     .then(() => {
@@ -285,10 +275,10 @@ Ganglion.prototype.disconnect = function (stopStreaming) {
 };
 
 /**
- * Return the local name of the attached Ganglion device.
+ * Return the local name of the attached Jamar device.
  * @return {null|String}
  */
-Ganglion.prototype.getLocalName = function () {
+Jamar.prototype.getLocalName = function () {
   return this._localName;
 };
 
@@ -296,7 +286,7 @@ Ganglion.prototype.getLocalName = function () {
  * Get's the multi packet buffer.
  * @return {null|Buffer} - Can be null if no multi packets received.
  */
-Ganglion.prototype.getMutliPacketBuffer = function () {
+Jamar.prototype.getMutliPacketBuffer = function () {
   return this._multiPacketBuffer;
 };
 
@@ -304,23 +294,23 @@ Ganglion.prototype.getMutliPacketBuffer = function () {
  * Call to start testing impedance.
  * @return {global.Promise|Promise}
  */
-Ganglion.prototype.impedanceStart = function () {
-  return this.write(k.OBCIGanglionImpedanceStart);
+Jamar.prototype.impedanceStart = function () {
+  return this.write(k.OBCIJamarImpedanceStart);
 };
 
 /**
  * Call to stop testing impedance.
  * @return {global.Promise|Promise}
  */
-Ganglion.prototype.impedanceStop = function () {
-  return this.write(k.OBCIGanglionImpedanceStop);
+Jamar.prototype.impedanceStop = function () {
+  return this.write(k.OBCIJamarImpedanceStop);
 };
 
 /**
  * @description Checks if the driver is connected to a board.
  * @returns {boolean} - True if connected.
  */
-Ganglion.prototype.isConnected = function () {
+Jamar.prototype.isConnected = function () {
   return this._connected;
 };
 
@@ -328,7 +318,7 @@ Ganglion.prototype.isConnected = function () {
  * @description Checks if bluetooth is powered on.
  * @returns {boolean} - True if bluetooth is powered on.
  */
-Ganglion.prototype.isNobleReady = function () {
+Jamar.prototype.isNobleReady = function () {
   return this._nobleReady();
 };
 
@@ -336,7 +326,7 @@ Ganglion.prototype.isNobleReady = function () {
  * @description Checks if noble is currently scanning.
  * @returns {boolean} - True if streaming.
  */
-Ganglion.prototype.isSearching = function () {
+Jamar.prototype.isSearching = function () {
   return this._scanning;
 };
 
@@ -344,7 +334,7 @@ Ganglion.prototype.isSearching = function () {
  * @description Checks if the board is currently sending samples.
  * @returns {boolean} - True if streaming.
  */
-Ganglion.prototype.isStreaming = function () {
+Jamar.prototype.isStreaming = function () {
   return this._streaming;
 };
 
@@ -355,8 +345,8 @@ Ganglion.prototype.isStreaming = function () {
  * Note: This is dependent on if you configured the board correctly on setup options
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.numberOfChannels = function () {
-  return k.OBCINumberOfChannelsGanglion;
+Jamar.prototype.numberOfChannels = function () {
+  return k.OBCINumberOfChannelsJamar;
 };
 
 /**
@@ -364,7 +354,7 @@ Ganglion.prototype.numberOfChannels = function () {
  * @returns {Promise.<T>|*}
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.printRegisterSettings = function () {
+Jamar.prototype.printRegisterSettings = function () {
   return this.write(k.OBCIMiscQueryRegisterSettings);
 };
 
@@ -373,7 +363,7 @@ Ganglion.prototype.printRegisterSettings = function () {
  * @returns {Number} The sample rate
  * Note: This is dependent on if you configured the board correctly on setup options
  */
-Ganglion.prototype.sampleRate = function () {
+Jamar.prototype.sampleRate = function () {
   if (this.options.simulate) {
     return this.options.simulatorSampleRate;
   } else {
@@ -387,13 +377,13 @@ Ganglion.prototype.sampleRate = function () {
  * @param `maxSearchTime` {Number} - The amount of time to spend searching. (Default is 20 seconds)
  * @returns {Promise} - If scan was started
  */
-Ganglion.prototype.searchStart = function (maxSearchTime) {
-  const searchTime = maxSearchTime || k.OBCIGanglionBleSearchTime;
+Jamar.prototype.searchStart = function (maxSearchTime) {
+  const searchTime = maxSearchTime || k.OBCIJamarBleSearchTime;
 
   return new Promise((resolve, reject) => {
     this._searchTimeout = setTimeout(() => {
       this._nobleScanStop().catch(reject);
-      reject('Timeout: Unable to find Ganglion');
+      reject('Timeout: Unable to find Jamar');
     }, searchTime);
 
     this._nobleScanStart()
@@ -413,7 +403,7 @@ Ganglion.prototype.searchStart = function (maxSearchTime) {
  * Called to end a search.
  * @return {global.Promise|Promise}
  */
-Ganglion.prototype.searchStop = function () {
+Jamar.prototype.searchStop = function () {
   return this._nobleScanStop();
 };
 
@@ -422,7 +412,7 @@ Ganglion.prototype.searchStop = function () {
  * @returns {Promise} - Fulfilled if the command was sent to board.
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.softReset = function () {
+Jamar.prototype.softReset = function () {
   return this.write(k.OBCIMiscSoftReset);
 };
 
@@ -434,7 +424,7 @@ Ganglion.prototype.softReset = function () {
  *           mean the board will start streaming.
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.streamStart = function () {
+Jamar.prototype.streamStart = function () {
   return new Promise((resolve, reject) => {
     if (this.isStreaming()) return reject('Error [.streamStart()]: Already streaming');
     this._streaming = true;
@@ -455,7 +445,7 @@ Ganglion.prototype.streamStart = function () {
  *           mean the board stopped streaming.
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.streamStop = function () {
+Jamar.prototype.streamStop = function () {
   return new Promise((resolve, reject) => {
     if (!this.isStreaming()) return reject('Error [.streamStop()]: No stream to stop');
     this._streaming = false;
@@ -472,9 +462,9 @@ Ganglion.prototype.streamStop = function () {
  * @returns {Promise} indicating if the signal was able to be sent.
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.syntheticEnable = function () {
+Jamar.prototype.syntheticEnable = function () {
   return new Promise((resolve, reject) => {
-    this.write(k.OBCIGanglionSyntheticDataEnable)
+    this.write(k.OBCIJamarSyntheticDataEnable)
       .then(() => {
         if (this.options.verbose) console.log('Enabled synthetic data mode.');
         resolve();
@@ -488,9 +478,9 @@ Ganglion.prototype.syntheticEnable = function () {
  * @returns {Promise} - fulfilled if the command was sent.
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.syntheticDisable = function () {
+Jamar.prototype.syntheticDisable = function () {
   return new Promise((resolve, reject) => {
-    this.write(k.OBCIGanglionSyntheticDataDisable)
+    this.write(k.OBCIJamarSyntheticDataDisable)
       .then(() => {
         if (this.options.verbose) console.log('Disabled synthetic data mode.');
         resolve();
@@ -505,7 +495,7 @@ Ganglion.prototype.syntheticDisable = function () {
  * @returns {Promise} - fulfilled if command was able to be sent
  * @author AJ Keller (@pushtheworldllc)
  */
-Ganglion.prototype.write = function (data) {
+Jamar.prototype.write = function (data) {
   return new Promise((resolve, reject) => {
     if (this._sendCharacteristic) {
       if (!Buffer.isBuffer(data)) {
@@ -535,7 +525,7 @@ Ganglion.prototype.write = function (data) {
  * @return {{sampleNumber: *}}
  * @private
  */
-Ganglion.prototype._buildSample = function (sampleNumber, rawData) {
+Jamar.prototype._buildSample = function (sampleNumber, rawData) {
   let sample = {
     sampleNumber: sampleNumber,
     timeStamp: Date.now()
@@ -544,8 +534,8 @@ Ganglion.prototype._buildSample = function (sampleNumber, rawData) {
     sample['channelDataCounts'] = rawData;
   } else {
     sample['channelData'] = [];
-    for (let j = 0; j < k.OBCINumberOfChannelsGanglion; j++) {
-      sample.channelData.push(rawData[j] * k.OBCIGanglionScaleFactorPerCountVolts);
+    for (let j = 0; j < k.OBCINumberOfChannelsJamar; j++) {
+      sample.channelData.push(rawData[j] * k.OBCIJamarScaleFactorPerCountVolts);
     }
   }
   return sample;
@@ -557,7 +547,7 @@ Ganglion.prototype._buildSample = function (sampleNumber, rawData) {
  *  of shape 2x4 (2 samples per packet and 4 channels per sample.)
  * @private
  */
-Ganglion.prototype._decompressSamples = function (receivedDeltas) {
+Jamar.prototype._decompressSamples = function (receivedDeltas) {
   // add the delta to the previous value
   for (let i = 1; i < 3; i++) {
     for (let j = 0; j < 4; j++) {
@@ -570,7 +560,7 @@ Ganglion.prototype._decompressSamples = function (receivedDeltas) {
  * @description Called once when for any reason the ble connection is no longer open.
  * @private
  */
-Ganglion.prototype._disconnected = function () {
+Jamar.prototype._disconnected = function () {
   this._streaming = false;
   this._connected = false;
 
@@ -611,21 +601,21 @@ Ganglion.prototype._disconnected = function () {
  * Call to destroy the noble event emitters.
  * @private
  */
-Ganglion.prototype._nobleDestroy = function () {
+Jamar.prototype._nobleDestroy = function () {
   if (noble)  {
     noble.removeAllListeners(k.OBCINobleEmitterStateChange);
     noble.removeAllListeners(k.OBCINobleEmitterDiscover);
   }
 };
 
-Ganglion.prototype._nobleConnect = function (peripheral) {
+Jamar.prototype._nobleConnect = function (peripheral) {
   return new Promise((resolve, reject) => {
     if (this.isConnected()) return reject('already connected!');
 
     this._peripheral = peripheral;
     this._localName = peripheral.advertisement.localName;
     // if (_.contains(_peripheral.advertisement.localName, rfduino.localNamePrefix)) {
-    // TODO: slice first 8 of localName and see if that is ganglion
+    // TODO: slice first 8 of localName and see if that is jamar
     // here is where we can capture the advertisement data from the rfduino and check to make sure its ours
     if (this.options.verbose) console.log('Device is advertising \'' + this._peripheral.advertisement.localName + '\' service.');
     // TODO: filter based on advertising name ie make sure we are looking for the right thing
@@ -706,7 +696,7 @@ Ganglion.prototype._nobleConnect = function (peripheral) {
  * Call to add the noble event listeners.
  * @private
  */
-Ganglion.prototype._nobleInit = function () {
+Jamar.prototype._nobleInit = function () {
   noble.on(k.OBCINobleEmitterStateChange, (state) => {
     // TODO: send state change error to gui
 
@@ -738,22 +728,22 @@ Ganglion.prototype._nobleInit = function () {
  * @param peripheral {Object} Peripheral object from noble.
  * @private
  */
-Ganglion.prototype._nobleOnDeviceDiscoveredCallback = function (peripheral) {
+Jamar.prototype._nobleOnDeviceDiscoveredCallback = function (peripheral) {
   // if(this.options.verbose) console.log(peripheral.advertisement);
   this.peripheralArray.push(peripheral);
-  if (k.isPeripheralGanglion(peripheral)) {
-    if (this.options.verbose) console.log('Found ganglion!');
-    if (_.isUndefined(_.find(this.ganglionPeripheralArray,
+  if (k.isPeripheralJamar(peripheral)) {
+    if (this.options.verbose) console.log('Found jamar!');
+    if (_.isUndefined(_.find(this.jamarPeripheralArray,
         (p) => {
           return p.advertisement.localName === peripheral.advertisement.localName;
         }))) {
-      this.ganglionPeripheralArray.push(peripheral);
+      this.jamarPeripheralArray.push(peripheral);
     }
-    this.emit(k.OBCIEmitterGanglionFound, peripheral);
+    this.emit(k.OBCIEmitterJamarFound, peripheral);
   }
 };
 
-Ganglion.prototype._nobleReady = function () {
+Jamar.prototype._nobleReady = function () {
   return noble.state === k.OBCINobleStatePoweredOn;
 };
 
@@ -762,7 +752,7 @@ Ganglion.prototype._nobleReady = function () {
  * @returns {global.Promise|Promise}
  * @private
  */
-Ganglion.prototype._nobleScanStart = function () {
+Jamar.prototype._nobleScanStart = function () {
   return new Promise((resolve, reject) => {
     if (this.isSearching()) return reject(k.OBCIErrorNobleAlreadyScanning);
     if (!this._nobleReady()) return reject(k.OBCIErrorNobleNotInPoweredOnState);
@@ -774,7 +764,7 @@ Ganglion.prototype._nobleScanStart = function () {
       this.emit(k.OBCINobleEmitterScanStart);
       resolve();
     });
-    // Only look so simblee ble devices and allow duplicates (multiple ganglions)
+    // Only look so simblee ble devices and allow duplicates (multiple jamars)
     // noble.startScanning([k.SimbleeUuidService], true);
     noble.startScanning([], false);
   });
@@ -785,7 +775,7 @@ Ganglion.prototype._nobleScanStart = function () {
  * @return {global.Promise|Promise}
  * @private
  */
-Ganglion.prototype._nobleScanStop = function () {
+Jamar.prototype._nobleScanStop = function () {
   return new Promise((resolve, reject) => {
     if (!this.isSearching()) return reject(k.OBCIErrorNobleNotAlreadyScanning);
     if (this.options.verbose) console.log(`Stopping scan`);
@@ -803,28 +793,28 @@ Ganglion.prototype._nobleScanStop = function () {
 
 /**
  * Route incoming data to proper functions
- * @param data {Buffer} - Data buffer from noble Ganglion.
+ * @param data {Buffer} - Data buffer from noble Jamar.
  * @private
  */
-Ganglion.prototype._processBytes = function (data) {
+Jamar.prototype._processBytes = function (data) {
   if (this.options.debug) openBCIUtils.debugBytes('<<', data);
   this.lastPacket = data;
   let byteId = parseInt(data[0]);
-  if (byteId <= k.OBCIGanglionByteId19Bit.max) {
+  if (byteId <= k.OBCIJamarByteId19Bit.max) {
     this._processProcessSampleData(data);
   } else {
     switch (byteId) {
-      case k.OBCIGanglionByteIdMultiPacket:
+      case k.OBCIJamarByteIdMultiPacket:
         this._processMultiBytePacket(data);
         break;
-      case k.OBCIGanglionByteIdMultiPacketStop:
+      case k.OBCIJamarByteIdMultiPacketStop:
         this._processMultiBytePacketStop(data);
         break;
-      case k.OBCIGanglionByteIdImpedanceChannel1:
-      case k.OBCIGanglionByteIdImpedanceChannel2:
-      case k.OBCIGanglionByteIdImpedanceChannel3:
-      case k.OBCIGanglionByteIdImpedanceChannel4:
-      case k.OBCIGanglionByteIdImpedanceChannelReference:
+      case k.OBCIJamarByteIdImpedanceChannel1:
+      case k.OBCIJamarByteIdImpedanceChannel2:
+      case k.OBCIJamarByteIdImpedanceChannel3:
+      case k.OBCIJamarByteIdImpedanceChannel4:
+      case k.OBCIJamarByteIdImpedanceChannelReference:
         this._processImpedanceData(data);
         break;
       default:
@@ -839,22 +829,22 @@ Ganglion.prototype._processBytes = function (data) {
  *  Data packet buffer from noble.
  * @private
  */
-Ganglion.prototype._processCompressedData = function (data) {
+Jamar.prototype._processCompressedData = function (data) {
   // Save the packet counter
   this._packetCounter = parseInt(data[0]);
 
   // Decompress the buffer into array
-  if (this._packetCounter <= k.OBCIGanglionByteId18Bit.max) {
-    this._decompressSamples(ganglionSample.decompressDeltas18Bit(data.slice(k.OBCIGanglionPacket18Bit.dataStart, k.OBCIGanglionPacket18Bit.dataStop)));
+  if (this._packetCounter <= k.OBCIJamarByteId18Bit.max) {
+    this._decompressSamples(jamarSample.decompressDeltas18Bit(data.slice(k.OBCIJamarPacket18Bit.dataStart, k.OBCIJamarPacket18Bit.dataStop)));
     switch (this._packetCounter % 10) {
-      case k.OBCIGanglionAccelAxisX:
-        this._accelArray[0] = this.options.sendCounts ? data.readInt8(k.OBCIGanglionPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIGanglionPacket18Bit.auxByte - 1) * k.OBCIGanglionAccelScaleFactor;
+      case k.OBCIJamarAccelAxisX:
+        this._accelArray[0] = this.options.sendCounts ? data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) * k.OBCIJamarAccelScaleFactor;
         break;
-      case k.OBCIGanglionAccelAxisY:
-        this._accelArray[1] = this.options.sendCounts ? data.readInt8(k.OBCIGanglionPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIGanglionPacket18Bit.auxByte - 1) * k.OBCIGanglionAccelScaleFactor;
+      case k.OBCIJamarAccelAxisY:
+        this._accelArray[1] = this.options.sendCounts ? data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) * k.OBCIJamarAccelScaleFactor;
         break;
-      case k.OBCIGanglionAccelAxisZ:
-        this._accelArray[2] = this.options.sendCounts ? data.readInt8(k.OBCIGanglionPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIGanglionPacket18Bit.auxByte - 1) * k.OBCIGanglionAccelScaleFactor;
+      case k.OBCIJamarAccelAxisZ:
+        this._accelArray[2] = this.options.sendCounts ? data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) * k.OBCIJamarAccelScaleFactor;
         this.emit(k.OBCIEmitterAccelerometer, this._accelArray);
         break;
       default:
@@ -867,7 +857,7 @@ Ganglion.prototype._processCompressedData = function (data) {
     this.emit(k.OBCIEmitterSample, sample2);
 
   } else {
-    this._decompressSamples(ganglionSample.decompressDeltas19Bit(data.slice(k.OBCIGanglionPacket19Bit.dataStart, k.OBCIGanglionPacket19Bit.dataStop)));
+    this._decompressSamples(jamarSample.decompressDeltas19Bit(data.slice(k.OBCIJamarPacket19Bit.dataStart, k.OBCIJamarPacket19Bit.dataStop)));
 
     const sample1 = this._buildSample((this._packetCounter - 100) * 2 - 1, this._decompressedSamples[1]);
     this.emit(k.OBCIEmitterSample, sample1);
@@ -877,7 +867,7 @@ Ganglion.prototype._processCompressedData = function (data) {
   }
 
   // Rotate the 0 position for next time
-  for (let i = 0; i < k.OBCINumberOfChannelsGanglion; i++) {
+  for (let i = 0; i < k.OBCINumberOfChannelsJamar; i++) {
     this._decompressedSamples[0][i] = this._decompressedSamples[2][i];
   }
 };
@@ -887,24 +877,24 @@ Ganglion.prototype._processCompressedData = function (data) {
  * @param data {Buffer}
  * @private
  */
-Ganglion.prototype._processImpedanceData = function (data) {
+Jamar.prototype._processImpedanceData = function (data) {
   if (this.options.debug) openBCIUtils.debugBytes('Impedance <<< ', data);
   const byteId = parseInt(data[0]);
   let channelNumber;
   switch (byteId) {
-    case k.OBCIGanglionByteIdImpedanceChannel1:
+    case k.OBCIJamarByteIdImpedanceChannel1:
       channelNumber = 1;
       break;
-    case k.OBCIGanglionByteIdImpedanceChannel2:
+    case k.OBCIJamarByteIdImpedanceChannel2:
       channelNumber = 2;
       break;
-    case k.OBCIGanglionByteIdImpedanceChannel3:
+    case k.OBCIJamarByteIdImpedanceChannel3:
       channelNumber = 3;
       break;
-    case k.OBCIGanglionByteIdImpedanceChannel4:
+    case k.OBCIJamarByteIdImpedanceChannel4:
       channelNumber = 4;
       break;
-    case k.OBCIGanglionByteIdImpedanceChannelReference:
+    case k.OBCIJamarByteIdImpedanceChannelReference:
       channelNumber = 0;
       break;
   }
@@ -934,11 +924,11 @@ Ganglion.prototype._processImpedanceData = function (data) {
  *  The multi packet buffer.
  * @private
  */
-Ganglion.prototype._processMultiBytePacket = function (data) {
+Jamar.prototype._processMultiBytePacket = function (data) {
   if (this._multiPacketBuffer) {
-    this._multiPacketBuffer = Buffer.concat([this._multiPacketBuffer, data.slice(k.OBCIGanglionPacket19Bit.dataStart, k.OBCIGanglionPacket19Bit.dataStop)]);
+    this._multiPacketBuffer = Buffer.concat([this._multiPacketBuffer, data.slice(k.OBCIJamarPacket19Bit.dataStart, k.OBCIJamarPacket19Bit.dataStop)]);
   } else {
-    this._multiPacketBuffer = data.slice(k.OBCIGanglionPacket19Bit.dataStart, k.OBCIGanglionPacket19Bit.dataStop);
+    this._multiPacketBuffer = data.slice(k.OBCIJamarPacket19Bit.dataStart, k.OBCIJamarPacket19Bit.dataStop);
   }
 };
 
@@ -948,19 +938,19 @@ Ganglion.prototype._processMultiBytePacket = function (data) {
  *  The multi packet stop buffer.
  * @private
  */
-Ganglion.prototype._processMultiBytePacketStop = function (data) {
+Jamar.prototype._processMultiBytePacketStop = function (data) {
   this._processMultiBytePacket(data);
   this.emit(k.OBCIEmitterMessage, this._multiPacketBuffer);
   this.destroyMultiPacketBuffer();
 };
 
-Ganglion.prototype._resetDroppedPacketSystem = function () {
+Jamar.prototype._resetDroppedPacketSystem = function () {
   this._packetCounter = -1;
   this._firstPacket = true;
   this._droppedPacketCounter = 0;
 };
 
-Ganglion.prototype._droppedPacket = function (droppedPacketNumber) {
+Jamar.prototype._droppedPacket = function (droppedPacketNumber) {
   this.emit(k.OBCIEmitterDroppedPacket, [droppedPacketNumber]);
   this._droppedPacketCounter++;
 };
@@ -970,7 +960,7 @@ Ganglion.prototype._droppedPacket = function (droppedPacketNumber) {
  * @param data {Buffer}
  * @private
  */
-Ganglion.prototype._processProcessSampleData = function(data) {
+Jamar.prototype._processProcessSampleData = function(data) {
   const curByteId = parseInt(data[0]);
   const difByteId = curByteId - this._packetCounter;
 
@@ -982,31 +972,31 @@ Ganglion.prototype._processProcessSampleData = function(data) {
 
   // Wrap around situation
   if (difByteId < 0) {
-    if (this._packetCounter <= k.OBCIGanglionByteId18Bit.max) {
-      if (this._packetCounter === k.OBCIGanglionByteId18Bit.max) {
-        if (curByteId !== k.OBCIGanglionByteIdUncompressed) {
+    if (this._packetCounter <= k.OBCIJamarByteId18Bit.max) {
+      if (this._packetCounter === k.OBCIJamarByteId18Bit.max) {
+        if (curByteId !== k.OBCIJamarByteIdUncompressed) {
           this._droppedPacket(curByteId - 1);
         }
       } else {
         let tempCounter = this._packetCounter + 1;
-        while (tempCounter <= k.OBCIGanglionByteId18Bit.max) {
+        while (tempCounter <= k.OBCIJamarByteId18Bit.max) {
           this._droppedPacket(tempCounter);
           tempCounter++;
         }
       }
-    } else if (this._packetCounter === k.OBCIGanglionByteId19Bit.max) {
-      if (curByteId !== k.OBCIGanglionByteIdUncompressed) {
+    } else if (this._packetCounter === k.OBCIJamarByteId19Bit.max) {
+      if (curByteId !== k.OBCIJamarByteIdUncompressed) {
         this._droppedPacket(curByteId - 1);
       }
     } else {
       let tempCounter = this._packetCounter + 1;
-      while (tempCounter <= k.OBCIGanglionByteId19Bit.max) {
+      while (tempCounter <= k.OBCIJamarByteId19Bit.max) {
         this._droppedPacket(tempCounter);
         tempCounter++;
       }
     }
   } else if (difByteId > 1) {
-    if (this._packetCounter === k.OBCIGanglionByteIdUncompressed && curByteId === k.OBCIGanglionByteId19Bit.min) {
+    if (this._packetCounter === k.OBCIJamarByteIdUncompressed && curByteId === k.OBCIJamarByteId19Bit.min) {
       this._processRouteSampleData(data);
       return;
     } else {
@@ -1020,8 +1010,8 @@ Ganglion.prototype._processProcessSampleData = function(data) {
   this._processRouteSampleData(data);
 };
 
-Ganglion.prototype._processRouteSampleData = function(data) {
-  if (parseInt(data[0]) === k.OBCIGanglionByteIdUncompressed) {
+Jamar.prototype._processRouteSampleData = function(data) {
+  if (parseInt(data[0]) === k.OBCIJamarByteIdUncompressed) {
     this._processUncompressedData(data);
   } else {
     this._processCompressedData(data);
@@ -1033,7 +1023,7 @@ Ganglion.prototype._processRouteSampleData = function(data) {
  * @param data {Buffer}
  * @private
  */
-Ganglion.prototype._processOtherData = function (data) {
+Jamar.prototype._processOtherData = function (data) {
   openBCIUtils.debugBytes('OtherData <<< ', data);
 };
 
@@ -1043,11 +1033,11 @@ Ganglion.prototype._processOtherData = function (data) {
  *  Data packet buffer from noble.
  * @private
  */
-Ganglion.prototype._processUncompressedData = function (data) {
+Jamar.prototype._processUncompressedData = function (data) {
   let start = 1;
 
   // Resets the packet counter back to zero
-  this._packetCounter = k.OBCIGanglionByteIdUncompressed;  // used to find dropped packets
+  this._packetCounter = k.OBCIJamarByteIdUncompressed;  // used to find dropped packets
   for (let i = 0; i < 4; i++) {
     this._decompressedSamples[0][i] = interpret24bitAsInt32(data, start);  // seed the decompressor
     start += 3;
@@ -1057,7 +1047,7 @@ Ganglion.prototype._processUncompressedData = function (data) {
   this.emit(k.OBCIEmitterSample, newSample);
 };
 
-module.exports = Ganglion;
+module.exports = Jamar;
 
 function interpret24bitAsInt32 (byteArray, index) {
   // little endian

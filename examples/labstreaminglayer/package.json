@@ -18,7 +18,7 @@
   "author": "AJ Keller",
   "license": "MIT",
   "dependencies": {
-    "openbci-ganglion": "^0.4.3",
+    "openbci-jamar": "^0.4.3",
     "zmq-prebuilt": "^2.1.0",
     "noble": "1.7.0"
   },

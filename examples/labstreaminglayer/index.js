@@ -1,10 +1,10 @@
-const Ganglion = require('openbci-ganglion').Ganglion;
+const Jamar = require('openbci-jamar').Jamar;
 var portPub = 'tcp://127.0.0.1:3004';
 var zmq = require('zmq-prebuilt');
 var socket = zmq.socket('pair');
 var verbose = false;
 
-let ganglion = new Ganglion({
+let jamar = new Jamar({
   nobleAutoStart: true,
   sendCounts: true,
   verbose: true
@@ -13,51 +13,51 @@ let ganglion = new Ganglion({
     console.log(error);
   } else {
     if (verbose) {
-      console.log('Ganglion initialize completed');
+      console.log('Jamar initialize completed');
     }
   }
 });
 
-ganglion.once('ganglionFound', (peripheral) => {
-  ganglion.searchStop();
-  ganglion.on('sample', (sample) => {
+jamar.once('jamarFound', (peripheral) => {
+  jamar.searchStop();
+  jamar.on('sample', (sample) => {
     sendToPython({
       action: 'process',
       command: 'sample',
       message: sample
     });
   });
-  ganglion.once('ready', () => {
-    ganglion.streamStart();
+  jamar.once('ready', () => {
+    jamar.streamStart();
   });
-  ganglion.connect(peripheral);
+  jamar.connect(peripheral);
 });
 
-// ganglion.searchStart();
+// jamar.searchStart();
 function exitHandler (options, err) {
   if (options.cleanup) {
     if (verbose) console.log('clean');
-    ganglion.manualDisconnect = true;
-    ganglion.disconnect();
-    ganglion.removeAllListeners('droppedPacket');
-    ganglion.removeAllListeners('accelerometer');
-    ganglion.removeAllListeners('sample');
-    ganglion.removeAllListeners('message');
-    ganglion.removeAllListeners('impedance');
-    ganglion.removeAllListeners('close');
-    ganglion.removeAllListeners('error');
-    ganglion.removeAllListeners('ganglionFound');
-    ganglion.removeAllListeners('ready');
-    ganglion.destroyNoble();
+    jamar.manualDisconnect = true;
+    jamar.disconnect();
+    jamar.removeAllListeners('droppedPacket');
+    jamar.removeAllListeners('accelerometer');
+    jamar.removeAllListeners('sample');
+    jamar.removeAllListeners('message');
+    jamar.removeAllListeners('impedance');
+    jamar.removeAllListeners('close');
+    jamar.removeAllListeners('error');
+    jamar.removeAllListeners('jamarFound');
+    jamar.removeAllListeners('ready');
+    jamar.destroyNoble();
   }
   if (err) console.log(err.stack);
   if (options.exit) {
     if (verbose) console.log('exit');
-    if (ganglion.isSearching()) {
-      ganglion.searchStop().catch(console.log);
+    if (jamar.isSearching()) {
+      jamar.searchStop().catch(console.log);
     }
-    ganglion.manualDisconnect = true;
-    ganglion.disconnect(true).catch(console.log);
+    jamar.manualDisconnect = true;
+    jamar.disconnect(true).catch(console.log);
     process.exit(0);
   }
 }

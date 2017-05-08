@@ -41,7 +41,7 @@
 //   var intBuf = new Buffer(3); // 3 bytes for 24 bits
 //   intBuf.fill(0); // Fill the buffer with 0s
 //
-//   var temp = float / (k.OBCIGanglionMCP3912Vref / k.OBCIGanglionMCP3912Gain / (Math.pow(2, 23) - 1)); // Convert to counts
+//   var temp = float / (k.OBCIJamarMCP3912Vref / k.OBCIJamarMCP3912Gain / (Math.pow(2, 23) - 1)); // Convert to counts
 //
 //   temp = Math.floor(temp); // Truncate counts number
 //

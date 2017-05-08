@@ -4,33 +4,33 @@ const sinon = require('sinon');
 const chai = require('chai');
 const expect = chai.expect;
 const should = chai.should(); // eslint-disable-line no-unused-vars
-const Ganglion = require('../openBCIGanglion');
-const k = require('../openBCIConstants');
+const Jamar = require('../openBCIJamar');
+const k = require('../jamarConstants');
 const chaiAsPromised = require('chai-as-promised');
 const sinonChai = require('sinon-chai');
 const bufferEqual = require('buffer-equal');
-const ganglionSample = require('../openBCIGanglionSample');
+const jamarSample = require('../openBCIJamarSample');
 const clone = require('clone');
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-describe('#ganglion-constructor', function () {
+describe('#jamar-constructor', function () {
   it('should callback if only callback used', function (done) {
     const cb = (err) => {
       done(err);
     };
-    const ganglion_cb = new Ganglion(cb);
+    const jamar_cb = new Jamar(cb);
   });
   it('should callback if options and callback', function (done) {
     const cb = (err) => {
       done(err);
     };
-    const ganglion_cb = new Ganglion({}, cb);
+    const jamar_cb = new Jamar({}, cb);
   });
 });
 
-describe('#ganglion', function () {
+describe('#jamar', function () {
   const mockProperties = {
     nobleAutoStart: false,
     nobleScanOnPowerOn: false,
@@ -46,58 +46,58 @@ describe('#ganglion', function () {
     sendCounts: false
   };
   const expectedProperties = clone(mockProperties);
-  const ganglion = new Ganglion(mockProperties);
+  const jamar = new Jamar(mockProperties);
   it('should have properties', function () {
-    expect(ganglion.options).to.deep.equal(expectedProperties);
+    expect(jamar.options).to.deep.equal(expectedProperties);
   });
   it('should return 4 channels', function () {
-    expect(ganglion.numberOfChannels()).to.equal(4);
+    expect(jamar.numberOfChannels()).to.equal(4);
   });
   it('should destroy the multi packet buffer', function () {
-    ganglion.destroyMultiPacketBuffer();
-    expect(ganglion.getMutliPacketBuffer()).to.equal(null);
+    jamar.destroyMultiPacketBuffer();
+    expect(jamar.getMutliPacketBuffer()).to.equal(null);
   });
   it('should stack and emit one buffer from several multi packet buffer', function () {
-    const bufMultPacket = new Buffer([k.OBCIGanglionByteIdMultiPacket]);
-    const bufMultPacketStop = new Buffer([k.OBCIGanglionByteIdMultiPacketStop]);
+    const bufMultPacket = new Buffer([k.OBCIJamarByteIdMultiPacket]);
+    const bufMultPacketStop = new Buffer([k.OBCIJamarByteIdMultiPacketStop]);
     const buf1 = new Buffer('taco');
     const newBuffer1 = Buffer.concat([bufMultPacket, buf1]);
-    ganglion._processMultiBytePacket(newBuffer1);
-    expect(bufferEqual(ganglion.getMutliPacketBuffer(), buf1)).to.equal(true);
+    jamar._processMultiBytePacket(newBuffer1);
+    expect(bufferEqual(jamar.getMutliPacketBuffer(), buf1)).to.equal(true);
 
     const buf2 = new Buffer('vegas');
     const newBuffer2 = Buffer.concat([bufMultPacket, buf2]);
-    ganglion._processMultiBytePacket(newBuffer2);
-    expect(bufferEqual(ganglion.getMutliPacketBuffer(), Buffer.concat([buf1, buf2])));
+    jamar._processMultiBytePacket(newBuffer2);
+    expect(bufferEqual(jamar.getMutliPacketBuffer(), Buffer.concat([buf1, buf2])));
 
     const bufStop = new Buffer('hola');
     const newBufferStop = Buffer.concat([bufMultPacketStop, bufStop]);
     let messageEventCalled = false;
-    ganglion.once('message', (data) => {
+    jamar.once('message', (data) => {
       expect(bufferEqual(data, Buffer.concat([buf1, buf2, bufStop]))).to.equal(true);
       messageEventCalled = true;
     });
-    ganglion._processMultiBytePacketStop(newBufferStop);
-    expect(ganglion.getMutliPacketBuffer()).to.equal(null);
+    jamar._processMultiBytePacketStop(newBufferStop);
+    expect(jamar.getMutliPacketBuffer()).to.equal(null);
     expect(messageEventCalled).to.equal(true);
 
-    ganglion.once('message', (data) => {
+    jamar.once('message', (data) => {
       expect(bufferEqual(data, bufStop)).to.equal(true);
     });
-    ganglion._processMultiBytePacketStop(newBufferStop);
-    expect(ganglion.getMutliPacketBuffer()).to.equal(null);
+    jamar._processMultiBytePacketStop(newBufferStop);
+    expect(jamar.getMutliPacketBuffer()).to.equal(null);
   });
   it('should be able to just get one packet buffer message', function () {
     const bufStop = new Buffer('hola');
-    const bufMultPacketStop = new Buffer([k.OBCIGanglionByteIdMultiPacketStop]);
+    const bufMultPacketStop = new Buffer([k.OBCIJamarByteIdMultiPacketStop]);
     const newBufferStop = Buffer.concat([bufMultPacketStop, bufStop]);
     let messageEventCalled = false;
-    ganglion.once('message', (data) => {
+    jamar.once('message', (data) => {
       expect(bufferEqual(data, bufStop)).to.equal(true);
       messageEventCalled = true;
     });
-    ganglion._processMultiBytePacketStop(newBufferStop);
-    expect(ganglion.getMutliPacketBuffer()).to.equal(null);
+    jamar._processMultiBytePacketStop(newBufferStop);
+    expect(jamar.getMutliPacketBuffer()).to.equal(null);
     expect(messageEventCalled).to.equal(true);
   });
   describe('#_processProcessSampleData', function () {
@@ -105,101 +105,101 @@ describe('#ganglion', function () {
     let funcSpyDroppedPacket;
     let funcSpyUncompressedData;
     before(function () {
-      funcSpyCompressedData = sinon.spy(ganglion, '_processCompressedData');
-      funcSpyDroppedPacket = sinon.spy(ganglion, '_droppedPacket');
-      funcSpyUncompressedData = sinon.spy(ganglion, '_processUncompressedData');
+      funcSpyCompressedData = sinon.spy(jamar, '_processCompressedData');
+      funcSpyDroppedPacket = sinon.spy(jamar, '_droppedPacket');
+      funcSpyUncompressedData = sinon.spy(jamar, '_processUncompressedData');
     });
     beforeEach(function () {
       funcSpyCompressedData.reset();
       funcSpyDroppedPacket.reset();
       funcSpyUncompressedData.reset();
-      ganglion._resetDroppedPacketSystem();
+      jamar._resetDroppedPacketSystem();
     });
     describe('18bit', function () {
       it('should call proper functions if no dropped packets', function () {
         it('should work on uncompressed data', function () {
-          ganglion._processProcessSampleData(ganglionSample.sampleUncompressedData());
+          jamar._processProcessSampleData(jamarSample.sampleUncompressedData());
           funcSpyUncompressedData.should.have.been.called;
           funcSpyDroppedPacket.should.not.have.been.called;
         });
 
         it('should work on compressed data', function () {
-          ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(1));
+          jamar._processProcessSampleData(jamarSample.sampleCompressedData(1));
           funcSpyCompressedData.should.have.been.called;
           funcSpyDroppedPacket.should.not.have.been.called;
         });
       });
       it('should recognize 0 packet dropped', function () {
-        // Send the last buffer, set's ganglion._packetCounter
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId18Bit.max));
+        // Send the last buffer, set's jamar._packetCounter
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId18Bit.max));
         funcSpyCompressedData.should.have.been.called;
-        const expectedMissedSample = k.OBCIGanglionByteIdUncompressed;
+        const expectedMissedSample = k.OBCIJamarByteIdUncompressed;
         // Call the function under test with one more then expected
-        const nextPacket = ganglionSample.sampleCompressedData(expectedMissedSample + 1);
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleCompressedData(expectedMissedSample + 1);
+        jamar._processProcessSampleData(nextPacket);
         funcSpyCompressedData.should.have.been.calledTwice;
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample);
       });
       it('should not find a dropped packet on wrap around', function () {
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId18Bit.max - 1));
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId18Bit.max - 1));
         funcSpyCompressedData.should.have.been.calledOnce;
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId18Bit.max));
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId18Bit.max));
         funcSpyCompressedData.should.have.been.calledTwice;
-        ganglion._processProcessSampleData(ganglionSample.sampleUncompressedData());
+        jamar._processProcessSampleData(jamarSample.sampleUncompressedData());
         funcSpyCompressedData.should.have.been.calledTwice;
         funcSpyUncompressedData.should.have.been.calledOnce;
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteIdUncompressed + 1));
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteIdUncompressed + 1));
         funcSpyCompressedData.should.have.been.calledThrice;
         funcSpyDroppedPacket.should.not.have.been.called;
       });
       it('should recognize dropped packet 99', function () {
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId18Bit.max - 1));
-        const expectedMissedSample = k.OBCIGanglionByteId18Bit.max;
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId18Bit.max - 1));
+        const expectedMissedSample = k.OBCIJamarByteId18Bit.max;
         // Call the function under test with one more then expected
-        const nextPacket = ganglionSample.sampleUncompressedData();
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleUncompressedData();
+        jamar._processProcessSampleData(nextPacket);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample);
       });
       it('should recognize dropped packet 98 and 99', function () {
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId18Bit.max - 2));
-        const expectedMissedSample1 = k.OBCIGanglionByteId18Bit.max - 1;
-        const expectedMissedSample2 = k.OBCIGanglionByteId18Bit.max;
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId18Bit.max - 2));
+        const expectedMissedSample1 = k.OBCIJamarByteId18Bit.max - 1;
+        const expectedMissedSample2 = k.OBCIJamarByteId18Bit.max;
         // Call the function under test with one more then expected
-        const nextPacket = ganglionSample.sampleUncompressedData();
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleUncompressedData();
+        jamar._processProcessSampleData(nextPacket);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample1);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample2);
       });
       it('should detect dropped packet 1 and process packet 2', function () {
-        // Send the raw buffer, set's ganglion._packetCounter
-        ganglion._processProcessSampleData(ganglionSample.sampleUncompressedData());
-        const expectedMissedSample = k.OBCIGanglionByteIdUncompressed + 1;
+        // Send the raw buffer, set's jamar._packetCounter
+        jamar._processProcessSampleData(jamarSample.sampleUncompressedData());
+        const expectedMissedSample = k.OBCIJamarByteIdUncompressed + 1;
         // Call the function under test with one more then expected
-        const nextPacket = ganglionSample.sampleCompressedData(expectedMissedSample + 1);
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleCompressedData(expectedMissedSample + 1);
+        jamar._processProcessSampleData(nextPacket);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample);
       });
       it('should detect dropped packet 1 & 2 and add process packet 3', function () {
-        // Send the last buffer, set's ganglion._packetCounter
-        ganglion._processProcessSampleData(ganglionSample.sampleUncompressedData());
-        const expectedMissedSample1 = k.OBCIGanglionByteIdUncompressed + 1;
-        const expectedMissedSample2 = k.OBCIGanglionByteIdUncompressed + 2;
+        // Send the last buffer, set's jamar._packetCounter
+        jamar._processProcessSampleData(jamarSample.sampleUncompressedData());
+        const expectedMissedSample1 = k.OBCIJamarByteIdUncompressed + 1;
+        const expectedMissedSample2 = k.OBCIJamarByteIdUncompressed + 2;
         // Call the function under test with two more then expected
-        const nextPacket = ganglionSample.sampleCompressedData(expectedMissedSample2 + 1);
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleCompressedData(expectedMissedSample2 + 1);
+        jamar._processProcessSampleData(nextPacket);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample1);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample2);
       });
       it('should emit a accel data array with counts', function () {
-        const bufAccelX = ganglionSample.sampleCompressedData(k.OBCIGanglionAccelAxisX);
-        const bufAccelY = ganglionSample.sampleCompressedData(k.OBCIGanglionAccelAxisY);
-        const bufAccelZ = ganglionSample.sampleCompressedData(k.OBCIGanglionAccelAxisZ);
+        const bufAccelX = jamarSample.sampleCompressedData(k.OBCIJamarAccelAxisX);
+        const bufAccelY = jamarSample.sampleCompressedData(k.OBCIJamarAccelAxisY);
+        const bufAccelZ = jamarSample.sampleCompressedData(k.OBCIJamarAccelAxisZ);
         const expectedXCount = 0;
         const expectedYCount = 1;
         const expectedZCount = 2;
-        bufAccelX[k.OBCIGanglionPacket18Bit.auxByte - 1] = expectedXCount;
-        bufAccelY[k.OBCIGanglionPacket18Bit.auxByte - 1] = expectedYCount;
-        bufAccelZ[k.OBCIGanglionPacket18Bit.auxByte - 1] = expectedZCount;
+        bufAccelX[k.OBCIJamarPacket18Bit.auxByte - 1] = expectedXCount;
+        bufAccelY[k.OBCIJamarPacket18Bit.auxByte - 1] = expectedYCount;
+        bufAccelZ[k.OBCIJamarPacket18Bit.auxByte - 1] = expectedZCount;
         const dimensions = 3;
         let accelDataFuncCalled = false;
         const accelDataFunc = (accelData) => {
@@ -209,25 +209,25 @@ describe('#ganglion', function () {
             expect(accelData[i]).to.equal(i);
           }
         };
-        ganglion.once('accelerometer', accelDataFunc);
-        ganglion.options.sendCounts = true;
-        ganglion._processProcessSampleData(bufAccelX);
-        ganglion._processProcessSampleData(bufAccelY);
-        ganglion._processProcessSampleData(bufAccelZ);
+        jamar.once('accelerometer', accelDataFunc);
+        jamar.options.sendCounts = true;
+        jamar._processProcessSampleData(bufAccelX);
+        jamar._processProcessSampleData(bufAccelY);
+        jamar._processProcessSampleData(bufAccelZ);
         expect(accelDataFuncCalled).to.be.equal(true);
-        ganglion.options.sendCounts = false;
-        ganglion.removeListener('accelerometer', accelDataFunc);
+        jamar.options.sendCounts = false;
+        jamar.removeListener('accelerometer', accelDataFunc);
       });
       it('should emit a accel data array with scaled values', function () {
-        const bufAccelX = ganglionSample.sampleCompressedData(k.OBCIGanglionAccelAxisX);
-        const bufAccelY = ganglionSample.sampleCompressedData(k.OBCIGanglionAccelAxisY);
-        const bufAccelZ = ganglionSample.sampleCompressedData(k.OBCIGanglionAccelAxisZ);
+        const bufAccelX = jamarSample.sampleCompressedData(k.OBCIJamarAccelAxisX);
+        const bufAccelY = jamarSample.sampleCompressedData(k.OBCIJamarAccelAxisY);
+        const bufAccelZ = jamarSample.sampleCompressedData(k.OBCIJamarAccelAxisZ);
         const expectedXCount = 0;
         const expectedYCount = 1;
         const expectedZCount = 2;
-        bufAccelX[k.OBCIGanglionPacket18Bit.auxByte - 1] = expectedXCount;
-        bufAccelY[k.OBCIGanglionPacket18Bit.auxByte - 1] = expectedYCount;
-        bufAccelZ[k.OBCIGanglionPacket18Bit.auxByte - 1] = expectedZCount;
+        bufAccelX[k.OBCIJamarPacket18Bit.auxByte - 1] = expectedXCount;
+        bufAccelY[k.OBCIJamarPacket18Bit.auxByte - 1] = expectedYCount;
+        bufAccelZ[k.OBCIJamarPacket18Bit.auxByte - 1] = expectedZCount;
         const dimensions = 3;
         let accelDataFuncCalled = false;
         const accelDataFunc = (accelData) => {
@@ -237,87 +237,87 @@ describe('#ganglion', function () {
             expect(accelData[i]).to.equal(i * 0.032);
           }
         };
-        ganglion.once('accelerometer', accelDataFunc);
-        ganglion.options.sendCounts = false;
-        ganglion._processProcessSampleData(bufAccelX);
-        ganglion._processProcessSampleData(bufAccelY);
-        ganglion._processProcessSampleData(bufAccelZ);
+        jamar.once('accelerometer', accelDataFunc);
+        jamar.options.sendCounts = false;
+        jamar._processProcessSampleData(bufAccelX);
+        jamar._processProcessSampleData(bufAccelY);
+        jamar._processProcessSampleData(bufAccelZ);
         expect(accelDataFuncCalled).to.be.equal(true);
-        ganglion.removeListener('accelerometer', accelDataFunc);
+        jamar.removeListener('accelerometer', accelDataFunc);
       });
     });
     describe('19bit', function () {
       it('should call proper functions if no dropped packets', function () {
         it('should work on uncompressed data', function () {
-          ganglion._processProcessSampleData(ganglionSample.sampleUncompressedData());
+          jamar._processProcessSampleData(jamarSample.sampleUncompressedData());
           funcSpyUncompressedData.should.have.been.called;
           funcSpyDroppedPacket.should.not.have.been.called;
         });
 
         it('should work on compressed data', function () {
-          ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId19Bit.min));
+          jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId19Bit.min));
           funcSpyCompressedData.should.have.been.called;
           funcSpyDroppedPacket.should.not.have.been.called;
         });
       });
       it('should recognize packet 101 was dropped', function () {
-        // Send the last buffer, set's ganglion._packetCounter
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId19Bit.max));
+        // Send the last buffer, set's jamar._packetCounter
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId19Bit.max));
         funcSpyCompressedData.should.have.been.called;
-        const expectedMissedSample = k.OBCIGanglionByteIdUncompressed;
+        const expectedMissedSample = k.OBCIJamarByteIdUncompressed;
         // Call the function under test with one more then expected
-        const nextPacket = ganglionSample.sampleCompressedData(expectedMissedSample + 1);
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleCompressedData(expectedMissedSample + 1);
+        jamar._processProcessSampleData(nextPacket);
         funcSpyCompressedData.should.have.been.calledTwice;
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample);
       });
       it('should not find a dropped packet on wrap around', function () {
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId19Bit.max - 1));
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId19Bit.max - 1));
         funcSpyCompressedData.should.have.been.calledOnce;
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId19Bit.max));
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId19Bit.max));
         funcSpyCompressedData.should.have.been.calledTwice;
-        ganglion._processProcessSampleData(ganglionSample.sampleUncompressedData());
+        jamar._processProcessSampleData(jamarSample.sampleUncompressedData());
         funcSpyCompressedData.should.have.been.calledTwice;
         funcSpyUncompressedData.should.have.been.calledOnce;
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId19Bit.min));
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId19Bit.min));
         funcSpyCompressedData.should.have.been.calledThrice;
         funcSpyDroppedPacket.should.not.have.been.called;
       });
       it('should recognize dropped packet 199', function () {
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId19Bit.max - 1));
-        const expectedMissedSample = k.OBCIGanglionByteId19Bit.max;
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId19Bit.max - 1));
+        const expectedMissedSample = k.OBCIJamarByteId19Bit.max;
         // Call the function under test with one more then expected
-        const nextPacket = ganglionSample.sampleUncompressedData();
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleUncompressedData();
+        jamar._processProcessSampleData(nextPacket);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample);
       });
       it('should recognize dropped packet 198 and 199', function () {
-        ganglion._processProcessSampleData(ganglionSample.sampleCompressedData(k.OBCIGanglionByteId19Bit.max - 2));
-        const expectedMissedSample1 = k.OBCIGanglionByteId19Bit.max - 1;
-        const expectedMissedSample2 = k.OBCIGanglionByteId19Bit.max;
+        jamar._processProcessSampleData(jamarSample.sampleCompressedData(k.OBCIJamarByteId19Bit.max - 2));
+        const expectedMissedSample1 = k.OBCIJamarByteId19Bit.max - 1;
+        const expectedMissedSample2 = k.OBCIJamarByteId19Bit.max;
         // Call the function under test with one more then expected
-        const nextPacket = ganglionSample.sampleUncompressedData();
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleUncompressedData();
+        jamar._processProcessSampleData(nextPacket);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample1);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample2);
       });
       it('should detect dropped packet 101 and process packet 102', function () {
-        // Send the raw buffer, set's ganglion._packetCounter
-        ganglion._processProcessSampleData(ganglionSample.sampleUncompressedData());
-        const expectedMissedSample = k.OBCIGanglionByteIdUncompressed + 1;
+        // Send the raw buffer, set's jamar._packetCounter
+        jamar._processProcessSampleData(jamarSample.sampleUncompressedData());
+        const expectedMissedSample = k.OBCIJamarByteIdUncompressed + 1;
         // Call the function under test with one more then expected
-        const nextPacket = ganglionSample.sampleCompressedData(expectedMissedSample + 1);
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleCompressedData(expectedMissedSample + 1);
+        jamar._processProcessSampleData(nextPacket);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample);
       });
       it('should detect dropped packet 101 & 1022 and add process packet 103', function () {
-        // Send the last buffer, set's ganglion._packetCounter
-        ganglion._processProcessSampleData(ganglionSample.sampleUncompressedData());
-        const expectedMissedSample1 = k.OBCIGanglionByteIdUncompressed + 1;
-        const expectedMissedSample2 = k.OBCIGanglionByteIdUncompressed + 2;
+        // Send the last buffer, set's jamar._packetCounter
+        jamar._processProcessSampleData(jamarSample.sampleUncompressedData());
+        const expectedMissedSample1 = k.OBCIJamarByteIdUncompressed + 1;
+        const expectedMissedSample2 = k.OBCIJamarByteIdUncompressed + 2;
         // Call the function under test with two more then expected
-        const nextPacket = ganglionSample.sampleCompressedData(expectedMissedSample2 + 1);
-        ganglion._processProcessSampleData(nextPacket);
+        const nextPacket = jamarSample.sampleCompressedData(expectedMissedSample2 + 1);
+        jamar._processProcessSampleData(nextPacket);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample1);
         funcSpyDroppedPacket.should.have.been.calledWith(expectedMissedSample2);
       });
@@ -332,11 +332,11 @@ describe('#ganglion', function () {
 
     before(function () {
       // Put watchers on all functions
-      funcSpyImpedanceData = sinon.spy(ganglion, '_processImpedanceData');
-      funcSpyMultiBytePacket = sinon.spy(ganglion, '_processMultiBytePacket');
-      funcSpyMultiBytePacketStop = sinon.spy(ganglion, '_processMultiBytePacketStop');
-      funcSpyOtherData = sinon.spy(ganglion, '_processOtherData');
-      funcSpyProcessedData = sinon.spy(ganglion, '_processProcessSampleData');
+      funcSpyImpedanceData = sinon.spy(jamar, '_processImpedanceData');
+      funcSpyMultiBytePacket = sinon.spy(jamar, '_processMultiBytePacket');
+      funcSpyMultiBytePacketStop = sinon.spy(jamar, '_processMultiBytePacketStop');
+      funcSpyOtherData = sinon.spy(jamar, '_processOtherData');
+      funcSpyProcessedData = sinon.spy(jamar, '_processProcessSampleData');
     });
     beforeEach(function () {
       funcSpyImpedanceData.reset();
@@ -346,122 +346,122 @@ describe('#ganglion', function () {
       funcSpyProcessedData.reset();
     });
     it('should route impedance channel 1 packet', function () {
-      ganglion._processBytes(ganglionSample.sampleImpedanceChannel1());
+      jamar._processBytes(jamarSample.sampleImpedanceChannel1());
       funcSpyImpedanceData.should.have.been.calledOnce;
     });
     it('should route impedance channel 2 packet', function () {
-      ganglion._processBytes(ganglionSample.sampleImpedanceChannel2());
+      jamar._processBytes(jamarSample.sampleImpedanceChannel2());
       funcSpyImpedanceData.should.have.been.calledOnce;
     });
     it('should route impedance channel 3 packet', function () {
-      ganglion._processBytes(ganglionSample.sampleImpedanceChannel3());
+      jamar._processBytes(jamarSample.sampleImpedanceChannel3());
       funcSpyImpedanceData.should.have.been.calledOnce;
     });
     it('should route impedance channel 4 packet', function () {
-      ganglion._processBytes(ganglionSample.sampleImpedanceChannel4());
+      jamar._processBytes(jamarSample.sampleImpedanceChannel4());
       funcSpyImpedanceData.should.have.been.calledOnce;
     });
     it('should route impedance channel reference packet', function () {
-      ganglion._processBytes(ganglionSample.sampleImpedanceChannelReference());
+      jamar._processBytes(jamarSample.sampleImpedanceChannelReference());
       funcSpyImpedanceData.should.have.been.calledOnce;
     });
     it('should route multi packet data', function () {
-      ganglion._processBytes(ganglionSample.sampleMultiBytePacket(new Buffer('taco')));
+      jamar._processBytes(jamarSample.sampleMultiBytePacket(new Buffer('taco')));
       funcSpyMultiBytePacket.should.have.been.calledOnce;
     });
     it('should route multi packet stop data', function () {
-      ganglion._processBytes(ganglionSample.sampleMultiBytePacketStop(new Buffer('taco')));
+      jamar._processBytes(jamarSample.sampleMultiBytePacketStop(new Buffer('taco')));
       funcSpyMultiBytePacketStop.should.have.been.calledOnce;
     });
     it('should route other data packet', function () {
-      ganglion._processBytes(ganglionSample.sampleOtherData(new Buffer('blah')));
+      jamar._processBytes(jamarSample.sampleOtherData(new Buffer('blah')));
       funcSpyOtherData.should.have.been.calledOnce;
     });
     it('should route processed data packet', function () {
-      ganglion._processBytes(ganglionSample.sampleUncompressedData());
+      jamar._processBytes(jamarSample.sampleUncompressedData());
       funcSpyProcessedData.should.have.been.calledOnce;
     });
   });
   it('should emit impedance value', function () {
     let expectedImpedanceValue = 1099;
-    const payloadBuf = new Buffer(`${expectedImpedanceValue}${k.OBCIGanglionImpedanceStop}`);
+    const payloadBuf = new Buffer(`${expectedImpedanceValue}${k.OBCIJamarImpedanceStop}`);
     let totalEvents = 0;
     let runningEventCount = 0;
 
     // Channel 1
     totalEvents++;
     let expectedChannelNumber = 1;
-    let impPre = new Buffer([k.OBCIGanglionByteIdImpedanceChannel1]);
+    let impPre = new Buffer([k.OBCIJamarByteIdImpedanceChannel1]);
     let expectedReturnValue = {
       channelNumber: expectedChannelNumber,
       impedanceValue: expectedImpedanceValue
     };
     let dataBuf = Buffer.concat([impPre, payloadBuf]);
-    ganglion.once('impedance', (actualImpedanceValue) => {
+    jamar.once('impedance', (actualImpedanceValue) => {
       expect(actualImpedanceValue).to.deep.equal(expectedReturnValue);
       runningEventCount++;
     });
-    ganglion._processImpedanceData(dataBuf);
+    jamar._processImpedanceData(dataBuf);
 
     // Channel 2
     totalEvents++;
     expectedChannelNumber = 2;
-    impPre[0] = k.OBCIGanglionByteIdImpedanceChannel2;
+    impPre[0] = k.OBCIJamarByteIdImpedanceChannel2;
     expectedReturnValue = {
       channelNumber: expectedChannelNumber,
       impedanceValue: expectedImpedanceValue
     };
     dataBuf = Buffer.concat([impPre, payloadBuf]);
-    ganglion.once('impedance', (actualImpedanceValue) => {
+    jamar.once('impedance', (actualImpedanceValue) => {
       expect(actualImpedanceValue).to.deep.equal(expectedReturnValue);
       runningEventCount++;
     });
-    ganglion._processImpedanceData(dataBuf);
+    jamar._processImpedanceData(dataBuf);
 
     // Channel 3
     totalEvents++;
     expectedChannelNumber = 3;
-    impPre[0] = k.OBCIGanglionByteIdImpedanceChannel3;
+    impPre[0] = k.OBCIJamarByteIdImpedanceChannel3;
     expectedReturnValue = {
       channelNumber: expectedChannelNumber,
       impedanceValue: expectedImpedanceValue
     };
     dataBuf = Buffer.concat([impPre, payloadBuf]);
-    ganglion.once('impedance', (actualImpedanceValue) => {
+    jamar.once('impedance', (actualImpedanceValue) => {
       expect(actualImpedanceValue).to.deep.equal(expectedReturnValue);
       runningEventCount++;
     });
-    ganglion._processImpedanceData(dataBuf);
+    jamar._processImpedanceData(dataBuf);
 
     // Channel 4
     totalEvents++;
     expectedChannelNumber = 4;
-    impPre[0] = k.OBCIGanglionByteIdImpedanceChannel4;
+    impPre[0] = k.OBCIJamarByteIdImpedanceChannel4;
     expectedReturnValue = {
       channelNumber: expectedChannelNumber,
       impedanceValue: expectedImpedanceValue
     };
     dataBuf = Buffer.concat([impPre, payloadBuf]);
-    ganglion.once('impedance', (actualImpedanceValue) => {
+    jamar.once('impedance', (actualImpedanceValue) => {
       expect(actualImpedanceValue).to.deep.equal(expectedReturnValue);
       runningEventCount++;
     });
-    ganglion._processImpedanceData(dataBuf);
+    jamar._processImpedanceData(dataBuf);
 
     // Channel Reference
     totalEvents++;
     expectedChannelNumber = 0;
-    impPre[0] = k.OBCIGanglionByteIdImpedanceChannelReference;
+    impPre[0] = k.OBCIJamarByteIdImpedanceChannelReference;
     expectedReturnValue = {
       channelNumber: expectedChannelNumber,
       impedanceValue: expectedImpedanceValue
     };
     dataBuf = Buffer.concat([impPre, payloadBuf]);
-    ganglion.once('impedance', (actualImpedanceValue) => {
+    jamar.once('impedance', (actualImpedanceValue) => {
       expect(actualImpedanceValue).to.deep.equal(expectedReturnValue);
       runningEventCount++;
     });
-    ganglion._processImpedanceData(dataBuf);
+    jamar._processImpedanceData(dataBuf);
 
     // Makes sure the correct amount of events were called.
     expect(runningEventCount).to.equal(totalEvents);
@@ -472,30 +472,30 @@ describe('#ganglion', function () {
 xdescribe('#noble', function () {
   xdescribe('#_nobleInit', function () {
     it('should emit powered on', function (done) {
-      const ganglion = new Ganglion({
+      const jamar = new Jamar({
         verbose: true,
         nobleAutoStart: false,
         nobleScanOnPowerOn: false
       });
-      ganglion.once(k.OBCIEmitterBlePoweredUp, () => {
+      jamar.once(k.OBCIEmitterBlePoweredUp, () => {
         // Able to get powered up thing
         done();
       });
-      ganglion._nobleInit();
+      jamar._nobleInit();
     });
   });
   describe('#_nobleScan', function () {
-    const searchTime = k.OBCIGanglionBleSearchTime * 2;
+    const searchTime = k.OBCIJamarBleSearchTime * 2;
 
     this.timeout(searchTime + 1000);
     it('gets peripherals', function (done) {
-      const ganglion = new Ganglion({
+      const jamar = new Jamar({
         verbose: true,
         nobleScanOnPowerOn: false
       });
 
       const doScan = () => {
-        ganglion._nobleScan(searchTime)
+        jamar._nobleScan(searchTime)
           .then((list) => {
             console.log('listPeripherals', list);
             if (list) done();
@@ -506,10 +506,10 @@ xdescribe('#noble', function () {
           });
       };
 
-      if (ganglion._nobleReady()) {
+      if (jamar._nobleReady()) {
         doScan();
       } else {
-        ganglion.on('blePoweredOn', doScan());
+        jamar.on('blePoweredOn', doScan());
       }
     });
   });

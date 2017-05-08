@@ -1,10 +1,10 @@
-# OpenBCI Ganglion Node SDK to Lab Streaming Layer
+# OpenBCI Jamar Node SDK to Lab Streaming Layer
 
 ## About
 
-This code provides an example of how to stream OpenBCI Ganglion data through the [lab streaming layer](https://github.com/sccn/labstreaminglayer) using the NodeJS SDK.
+This code provides an example of how to stream OpenBCI Jamar data through the [lab streaming layer](https://github.com/sccn/labstreaminglayer) using the NodeJS SDK.
 
-Follow the steps in this README to start streaming. The code is ready to run as-is, but can be modified and extended to customize how you are sending your data. This is designed to be used with the **OpenBCI Ganglion** (for **Ganglion support**, see the [Ganglion Node SDK](https://github.com/OpenBCI/OpenBCI_NodeJS/tree/master/examples/labstreaminglayer)).
+Follow the steps in this README to start streaming. The code is ready to run as-is, but can be modified and extended to customize how you are sending your data. This is designed to be used with the **OpenBCI Jamar** (for **Jamar support**, see the [Jamar Node SDK](https://github.com/OpenBCI/OpenBCI_NodeJS/tree/master/examples/labstreaminglayer)).
 
 ## Prerequisites
 
@@ -48,24 +48,24 @@ If you would like to use lab streaming layer in a custom OpenBCI NodeJS applicat
 
 index.js
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
+const Jamar = require('openbci-jamar').Jamar;
 var portPub = 'tcp://127.0.0.1:3004';
 var zmq = require('zmq-prebuilt');
 var socket = zmq.socket('pair');
 
-let ganglion = new Ganglion();
+let jamar = new Jamar();
 
 socket.bind(portPub)
 
-ganglion.once('ganglionFound', (peripheral) => {
-  ganglion.searchStop();
-  ganglion.on('sample', (sample) => {
+jamar.once('jamarFound', (peripheral) => {
+  jamar.searchStop();
+  jamar.on('sample', (sample) => {
     socket.send(JSON.stringify({message: sample}))
   });
-  ganglion.once('ready', () => {
-    ganglion.streamStart();
+  jamar.once('ready', () => {
+    jamar.streamStart();
   });
-  ganglion.connect(peripheral);
+  jamar.connect(peripheral);
 });
 
 // ZMQ

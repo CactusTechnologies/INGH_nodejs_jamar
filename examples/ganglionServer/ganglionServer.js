@@ -1,7 +1,7 @@
-const Ganglion = require('../../index').Ganglion;
-const k = require('../../openBCIConstants');
+const Jamar = require('../../index').Jamar;
+const k = require('../../jamarConstants');
 const verbose = true;
-let ganglion = new Ganglion({
+let jamar = new Jamar({
   debug: true,
   sendCounts: true,
   verbose: verbose
@@ -10,7 +10,7 @@ let ganglion = new Ganglion({
     console.log(error);
   } else {
     if (verbose) {
-      console.log('Ganglion initialize completed');
+      console.log('Jamar initialize completed');
     }
   }
 });
@@ -22,14 +22,14 @@ function errorFunc (err) {
 const impedance = false;
 const accel = false;
 
-ganglion.once(k.OBCIEmitterGanglionFound, (peripheral) => {
-  ganglion.searchStop().catch(errorFunc);
+jamar.once(k.OBCIEmitterJamarFound, (peripheral) => {
+  jamar.searchStop().catch(errorFunc);
 
   let droppedPacketCounter = 0;
   let secondCounter = 0;
   let buf = [];
   let sizeOfBuf = 0;
-  ganglion.on('sample', (sample) => {
+  jamar.on('sample', (sample) => {
     /** Work with sample */
     console.log(sample.sampleNumber);
 
@@ -52,21 +52,21 @@ ganglion.once(k.OBCIEmitterGanglionFound, (peripheral) => {
     // }
   });
 
-  ganglion.on('close', () => {
+  jamar.on('close', () => {
     console.log('close event');
   });
 
-  ganglion.on('droppedPacket', (data) => {
+  jamar.on('droppedPacket', (data) => {
     console.log('droppedPacket:', data);
     droppedPacketCounter++;
   });
 
-  ganglion.on('message', (message) => {
+  jamar.on('message', (message) => {
     console.log('message: ', message.toString());
   });
 
   let lastVal = 0;
-  ganglion.on('accelerometer', (accelData) => {
+  jamar.on('accelerometer', (accelData) => {
     // Use accel array [0, 0, 0]
     if (accelData[2] - lastVal > 1) {
       console.log(`Diff: ${accelData[2] - lastVal}`);
@@ -75,62 +75,62 @@ ganglion.once(k.OBCIEmitterGanglionFound, (peripheral) => {
     // console.log(`counter: ${accelData[2]}`);
   });
 
-  ganglion.on('impedance', (impedanceObj) => {
+  jamar.on('impedance', (impedanceObj) => {
     console.log(`channel ${impedanceObj.channelNumber} has impedance ${impedanceObj.impedanceValue}`);
   });
 
-  ganglion.once('ready', () => {
+  jamar.once('ready', () => {
       // if (accel) {
-      //     ganglion.accelStart()
+      //     jamar.accelStart()
       //         .then(() => {
-      //             return ganglion.streamStart();
+      //             return jamar.streamStart();
       //         })
       //         .catch(errorFunc);
       // } else if (impedance) {
-      //     ganglion.impedanceStart().catch(errorFunc);
+      //     jamar.impedanceStart().catch(errorFunc);
       // } else {
       //
       // }
-      ganglion.streamStart().catch(errorFunc);
+      jamar.streamStart().catch(errorFunc);
       console.log('ready');
 
   });
 
-  ganglion.connect("Ganglion-58f3").catch(errorFunc);
+  jamar.connect("Jamar-58f3").catch(errorFunc);
 });
 
 function exitHandler (options, err) {
   if (options.cleanup) {
     if (verbose) console.log('clean');
     // console.log(connectedPeripheral)
-    ganglion.manualDisconnect = true;
-    ganglion.disconnect();
-    ganglion.removeAllListeners('droppedPacket');
-    ganglion.removeAllListeners('accelerometer');
-    ganglion.removeAllListeners('sample');
-    ganglion.removeAllListeners('message');
-    ganglion.removeAllListeners('impedance');
-    ganglion.removeAllListeners('close');
-    ganglion.removeAllListeners('error');
-    ganglion.removeAllListeners('ganglionFound');
-    ganglion.removeAllListeners('ready');
-    ganglion.destroyNoble();
+    jamar.manualDisconnect = true;
+    jamar.disconnect();
+    jamar.removeAllListeners('droppedPacket');
+    jamar.removeAllListeners('accelerometer');
+    jamar.removeAllListeners('sample');
+    jamar.removeAllListeners('message');
+    jamar.removeAllListeners('impedance');
+    jamar.removeAllListeners('close');
+    jamar.removeAllListeners('error');
+    jamar.removeAllListeners('jamarFound');
+    jamar.removeAllListeners('ready');
+    jamar.destroyNoble();
 
   }
   if (err) console.log(err.stack);
   if (options.exit) {
     if (verbose) console.log('exit');
     if (impedance) {
-      ganglion.impedanceStop().catch(console.log);
+      jamar.impedanceStop().catch(console.log);
     }
-    if (ganglion.isSearching()) {
-      ganglion.searchStop().catch(console.log);
+    if (jamar.isSearching()) {
+      jamar.searchStop().catch(console.log);
     }
     if (accel) {
-      ganglion.accelStop().catch(console.log);
+      jamar.accelStop().catch(console.log);
     }
-    ganglion.manualDisconnect = true;
-    ganglion.disconnect(true).catch(console.log);
+    jamar.manualDisconnect = true;
+    jamar.disconnect(true).catch(console.log);
     process.exit(0);
   }
 }

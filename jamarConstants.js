@@ -51,10 +51,10 @@ const obciMiscSoftReset = 'v';
 const obciMiscResend = 'o';
 
 /** Possible number of channels */
-const obciNumberOfChannelsGanglion = 4;
+const obciNumberOfChannelsJamar = 4;
 
 /** Possible OpenBCI board types */
-const obciBoardGanglion = 'ganglion';
+const obciBoardJamar = 'jamar';
 
 /** Possible Simulator Line Noise injections */
 const obciSimulatorLineNoiseHz60 = '60Hz';
@@ -122,7 +122,7 @@ const obciEmitterBlePoweredUp = 'blePoweredOn';
 const obciEmitterClose = 'close';
 const obciEmitterDroppedPacket = 'droppedPacket';
 const obciEmitterError = 'error';
-const obciEmitterGanglionFound = 'ganglionFound';
+const obciEmitterJamarFound = 'jamarFound';
 const obciEmitterImpedance = 'impedance';
 const obciEmitterMessage = 'message';
 const obciEmitterQuery = 'query';
@@ -132,52 +132,52 @@ const obciEmitterSample = 'sample';
 const obciEmitterSynced = 'synced';
 
 /** Accel packets */
-const obciGanglionAccelAxisX = 1;
-const obciGanglionAccelAxisY = 2;
-const obciGanglionAccelAxisZ = 3;
+const obciJamarAccelAxisX = 1;
+const obciJamarAccelAxisY = 2;
+const obciJamarAccelAxisZ = 3;
 
 /** Accel scale factor */
-const obciGanglionAccelScaleFactor = 0.032; // mG per count
+const obciJamarAccelScaleFactor = 0.032; // mG per count
 
-/** Ganglion */
-const obciGanglionBleSearchTime = 20000; // ms
-const obciGanglionByteIdUncompressed = 0;
-const obciGanglionByteId18Bit = {
+/** Jamar */
+const obciJamarBleSearchTime = 20000; // ms
+const obciJamarByteIdUncompressed = 0;
+const obciJamarByteId18Bit = {
   max: 100,
   min: 1
 };
-const obciGanglionByteId19Bit = {
+const obciJamarByteId19Bit = {
   max: 200,
   min: 101
 };
-const obciGanglionByteIdImpedanceChannel1 = 201;
-const obciGanglionByteIdImpedanceChannel2 = 202;
-const obciGanglionByteIdImpedanceChannel3 = 203;
-const obciGanglionByteIdImpedanceChannel4 = 204;
-const obciGanglionByteIdImpedanceChannelReference = 205;
-const obciGanglionByteIdMultiPacket = 206;
-const obciGanglionByteIdMultiPacketStop = 207;
-const obciGanglionPacketSize = 20;
-const obciGanglionSamplesPerPacket = 2;
-const obciGanglionPacket18Bit = {
+const obciJamarByteIdImpedanceChannel1 = 201;
+const obciJamarByteIdImpedanceChannel2 = 202;
+const obciJamarByteIdImpedanceChannel3 = 203;
+const obciJamarByteIdImpedanceChannel4 = 204;
+const obciJamarByteIdImpedanceChannelReference = 205;
+const obciJamarByteIdMultiPacket = 206;
+const obciJamarByteIdMultiPacketStop = 207;
+const obciJamarPacketSize = 20;
+const obciJamarSamplesPerPacket = 2;
+const obciJamarPacket18Bit = {
   auxByte: 20,
   byteId: 0,
   dataStart: 1,
   dataStop: 19
 };
-const obciGanglionPacket19Bit = {
+const obciJamarPacket19Bit = {
   byteId: 0,
   dataStart: 1,
   dataStop: 20
 };
-const obciGanglionMCP3912Gain = 1.0;  // assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
-const obciGanglionMCP3912Vref = 1.2;  // reference voltage for ADC in MCP3912 set in hardware
-const obciGanglionPrefix = 'Ganglion';
-const obciGanglionSyntheticDataEnable = 't';
-const obciGanglionSyntheticDataDisable = 'T';
-const obciGanglionImpedanceStart = 'z';
-const obciGanglionImpedanceStop = 'Z';
-const obciGanglionScaleFactorPerCountVolts = obciGanglionMCP3912Vref / (8388607.0 * obciGanglionMCP3912Gain * 1.5 * 51.0);
+const obciJamarMCP3912Gain = 1.0;  // assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
+const obciJamarMCP3912Vref = 1.2;  // reference voltage for ADC in MCP3912 set in hardware
+const obciJamarPrefix = 'Jamar';
+const obciJamarSyntheticDataEnable = 't';
+const obciJamarSyntheticDataDisable = 'T';
+const obciJamarImpedanceStart = 'z';
+const obciJamarImpedanceStop = 'Z';
+const obciJamarScaleFactorPerCountVolts = obciJamarMCP3912Vref / (8388607.0 * obciJamarMCP3912Gain * 1.5 * 51.0);
 
 /** Simblee */
 const simbleeUuidService = 'fe84';
@@ -327,16 +327,16 @@ module.exports = {
   OBCIMiscSoftReset: obciMiscSoftReset,
   OBCIMiscResend: obciMiscResend,
   /** Possible number of channels */
-  OBCINumberOfChannelsGanglion: obciNumberOfChannelsGanglion,
+  OBCINumberOfChannelsJamar: obciNumberOfChannelsJamar,
   /** Possible OpenBCI board types */
-  OBCIBoardGanglion: obciBoardGanglion,
+  OBCIBoardJamar: obciBoardJamar,
   /** Possible Sample Rates */
   OBCISampleRate200: obciSampleRate200,
   /** Accel enable/disable commands */
   OBCIAccelStart: obciAccelStart,
   OBCIAccelStop: obciAccelStop,
   /** Accel scale factor */
-  OBCIGanglionAccelScaleFactor: obciGanglionAccelScaleFactor,
+  OBCIJamarAccelScaleFactor: obciJamarAccelScaleFactor,
   /** Errors */
   OBCIEmitterAccelerometer: obciEmitterAccelerometer,
   OBCIErrorNobleAlreadyScanning: errorNobleAlreadyScanning,
@@ -392,7 +392,7 @@ module.exports = {
   OBCIEmitterClose: obciEmitterClose,
   OBCIEmitterDroppedPacket: obciEmitterDroppedPacket,
   OBCIEmitterError: obciEmitterError,
-  OBCIEmitterGanglionFound: obciEmitterGanglionFound,
+  OBCIEmitterJamarFound: obciEmitterJamarFound,
   OBCIEmitterImpedance: obciEmitterImpedance,
   OBCIEmitterMessage: obciEmitterMessage,
   OBCIEmitterQuery: obciEmitterQuery,
@@ -401,33 +401,33 @@ module.exports = {
   OBCIEmitterSample: obciEmitterSample,
   OBCIEmitterSynced: obciEmitterSynced,
   /** Accel packets */
-  OBCIGanglionAccelAxisX: obciGanglionAccelAxisX,
-  OBCIGanglionAccelAxisY: obciGanglionAccelAxisY,
-  OBCIGanglionAccelAxisZ: obciGanglionAccelAxisZ,
-  /** Ganglion */
-  OBCIGanglionBleSearchTime: obciGanglionBleSearchTime,
-  OBCIGanglionByteIdUncompressed: obciGanglionByteIdUncompressed,
-  OBCIGanglionByteId18Bit: obciGanglionByteId18Bit,
-  OBCIGanglionByteId19Bit: obciGanglionByteId19Bit,
-  OBCIGanglionByteIdImpedanceChannel1: obciGanglionByteIdImpedanceChannel1,
-  OBCIGanglionByteIdImpedanceChannel2: obciGanglionByteIdImpedanceChannel2,
-  OBCIGanglionByteIdImpedanceChannel3: obciGanglionByteIdImpedanceChannel3,
-  OBCIGanglionByteIdImpedanceChannel4: obciGanglionByteIdImpedanceChannel4,
-  OBCIGanglionByteIdImpedanceChannelReference: obciGanglionByteIdImpedanceChannelReference,
-  OBCIGanglionByteIdMultiPacket: obciGanglionByteIdMultiPacket,
-  OBCIGanglionByteIdMultiPacketStop: obciGanglionByteIdMultiPacketStop,
-  OBCIGanglionMCP3912Gain: obciGanglionMCP3912Gain,  // assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
-  OBCIGanglionMCP3912Vref: obciGanglionMCP3912Vref,  // reference voltage for ADC in MCP3912 set in hardware
-  OBCIGanglionPacketSize: obciGanglionPacketSize,
-  OBCIGanglionPacket18Bit: obciGanglionPacket18Bit,
-  OBCIGanglionPacket19Bit: obciGanglionPacket19Bit,
-  OBCIGanglionPrefix: obciGanglionPrefix,
-  OBCIGanglionSamplesPerPacket: obciGanglionSamplesPerPacket,
-  OBCIGanglionSyntheticDataEnable: obciGanglionSyntheticDataEnable,
-  OBCIGanglionSyntheticDataDisable: obciGanglionSyntheticDataDisable,
-  OBCIGanglionImpedanceStart: obciGanglionImpedanceStart,
-  OBCIGanglionImpedanceStop: obciGanglionImpedanceStop,
-  OBCIGanglionScaleFactorPerCountVolts: obciGanglionScaleFactorPerCountVolts,
+  OBCIJamarAccelAxisX: obciJamarAccelAxisX,
+  OBCIJamarAccelAxisY: obciJamarAccelAxisY,
+  OBCIJamarAccelAxisZ: obciJamarAccelAxisZ,
+  /** Jamar */
+  OBCIJamarBleSearchTime: obciJamarBleSearchTime,
+  OBCIJamarByteIdUncompressed: obciJamarByteIdUncompressed,
+  OBCIJamarByteId18Bit: obciJamarByteId18Bit,
+  OBCIJamarByteId19Bit: obciJamarByteId19Bit,
+  OBCIJamarByteIdImpedanceChannel1: obciJamarByteIdImpedanceChannel1,
+  OBCIJamarByteIdImpedanceChannel2: obciJamarByteIdImpedanceChannel2,
+  OBCIJamarByteIdImpedanceChannel3: obciJamarByteIdImpedanceChannel3,
+  OBCIJamarByteIdImpedanceChannel4: obciJamarByteIdImpedanceChannel4,
+  OBCIJamarByteIdImpedanceChannelReference: obciJamarByteIdImpedanceChannelReference,
+  OBCIJamarByteIdMultiPacket: obciJamarByteIdMultiPacket,
+  OBCIJamarByteIdMultiPacketStop: obciJamarByteIdMultiPacketStop,
+  OBCIJamarMCP3912Gain: obciJamarMCP3912Gain,  // assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
+  OBCIJamarMCP3912Vref: obciJamarMCP3912Vref,  // reference voltage for ADC in MCP3912 set in hardware
+  OBCIJamarPacketSize: obciJamarPacketSize,
+  OBCIJamarPacket18Bit: obciJamarPacket18Bit,
+  OBCIJamarPacket19Bit: obciJamarPacket19Bit,
+  OBCIJamarPrefix: obciJamarPrefix,
+  OBCIJamarSamplesPerPacket: obciJamarSamplesPerPacket,
+  OBCIJamarSyntheticDataEnable: obciJamarSyntheticDataEnable,
+  OBCIJamarSyntheticDataDisable: obciJamarSyntheticDataDisable,
+  OBCIJamarImpedanceStart: obciJamarImpedanceStart,
+  OBCIJamarImpedanceStop: obciJamarImpedanceStop,
+  OBCIJamarScaleFactorPerCountVolts: obciJamarScaleFactorPerCountVolts,
   /** Simblee */
   SimbleeUuidService: simbleeUuidService,
   SimbleeUuidReceive: simbleeUuidReceive,
@@ -448,7 +448,7 @@ module.exports = {
   getPeripheralLocalNames,
   getPeripheralWithLocalName,
   getVersionNumber,
-  isPeripheralGanglion
+  isPeripheralJamar
 };
 
 /**
@@ -463,7 +463,7 @@ function getPeripheralLocalNames (pArray) {
     if (list.length > 0) {
       return resolve(list);
     } else {
-      return reject(`No peripherals discovered with prefix equal to ${k.OBCIGanglionPrefix}`);
+      return reject(`No peripherals discovered with prefix equal to ${k.OBCIJamarPrefix}`);
     }
   });
 }
@@ -498,14 +498,14 @@ function getVersionNumber (versionStr) {
 
 /**
  * @description Very safely checks to see if the noble peripheral is a
- *  ganglion by way of checking the local name property.
+ *  jamar by way of checking the local name property.
  */
-function isPeripheralGanglion (peripheral) {
+function isPeripheralJamar (peripheral) {
   if (peripheral) {
     if (peripheral.hasOwnProperty('advertisement')) {
       if (peripheral.advertisement !== null && peripheral.advertisement.hasOwnProperty('localName')) {
         if (peripheral.advertisement.localName !== undefined && peripheral.advertisement.localName !== null) {
-          if (peripheral.advertisement.localName.indexOf(obciGanglionPrefix) > -1) {
+          if (peripheral.advertisement.localName.indexOf(obciJamarPrefix) > -1) {
             return true;
           }
         }

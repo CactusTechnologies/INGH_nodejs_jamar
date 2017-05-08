@@ -1,2 +1,2 @@
-module.exports.Ganglion = require('./openBCIGanglion');
-module.exports.Constants = require('./openBCIConstants');
+module.exports.Jamar = require('./jamar');
+module.exports.Constants = require('./jamarConstants');

@@ -4,66 +4,66 @@ const chai = require('chai');
 const should = chai.should(); // eslint-disable-line no-unused-vars
 const expect = chai.expect;
 const assert = chai.assert;
-const ganglionSample = require('../openBCIGanglionSample');
-const k = require('../openBCIConstants');
+const jamarSample = require('../openBCIJamarSample');
+const k = require('../jamarConstants');
 
 var chaiAsPromised = require('chai-as-promised');
 var sinonChai = require('sinon-chai');
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-describe('openBCIGanglionUtils', function () {
+describe('openBCIJamarUtils', function () {
   describe('#convert18bitAsInt32', function () {
     it('converts a small positive number', function () {
       const buf1 = new Buffer([0x00, 0x06, 0x90]); // 0x000690 === 1680
-      const num = ganglionSample.convert18bitAsInt32(buf1);
+      const num = jamarSample.convert18bitAsInt32(buf1);
       assert.equal(num, 1680);
     });
     it('converts a small positive number', function () {
       const buf1 = new Buffer([0x00, 0x06, 0x90]); // 0x000690 === 1680
-      const num = ganglionSample.convert18bitAsInt32(buf1);
+      const num = jamarSample.convert18bitAsInt32(buf1);
       assert.equal(num, 1680);
     });
     it('converts a large positive number', function () {
       const buf1 = new Buffer([0x02, 0xC0, 0x00]); // 0x02C001 === 180225
-      const num = ganglionSample.convert18bitAsInt32(buf1);
+      const num = jamarSample.convert18bitAsInt32(buf1);
       assert.equal(num, 180224);
     });
     it('converts a small negative number', function () {
       const buf1 = new Buffer([0xFF, 0xFF, 0xFF]); // 0xFFFFFF === -1
-      const num = ganglionSample.convert18bitAsInt32(buf1);
+      const num = jamarSample.convert18bitAsInt32(buf1);
       num.should.be.approximately(-1, 1);
     });
     it('converts a large negative number', function () {
       const buf1 = new Buffer([0x04, 0xA1, 0x01]); // 0x04A101 === -220927
-      const num = ganglionSample.convert18bitAsInt32(buf1);
+      const num = jamarSample.convert18bitAsInt32(buf1);
       num.should.be.approximately(-220927, 1);
     });
   });
   describe('#convert19bitAsInt32', function () {
     it('converts a small positive number', function () {
       const buf1 = new Buffer([0x00, 0x06, 0x90]); // 0x000690 === 1680
-      const num = ganglionSample.convert19bitAsInt32(buf1);
+      const num = jamarSample.convert19bitAsInt32(buf1);
       assert.equal(num, 1680);
     });
     it('converts a small positive number', function () {
       const buf1 = new Buffer([0x00, 0x06, 0x90]); // 0x000690 === 1680
-      const num = ganglionSample.convert19bitAsInt32(buf1);
+      const num = jamarSample.convert19bitAsInt32(buf1);
       assert.equal(num, 1680);
     });
     it('converts a large positive number', function () {
       const buf1 = new Buffer([0x02, 0xC0, 0x00]); // 0x02C001 === 180225
-      const num = ganglionSample.convert19bitAsInt32(buf1);
+      const num = jamarSample.convert19bitAsInt32(buf1);
       assert.equal(num, 180224);
     });
     it('converts a small negative number', function () {
       const buf1 = new Buffer([0xFF, 0xFF, 0xFF]); // 0xFFFFFF === -1
-      const num = ganglionSample.convert19bitAsInt32(buf1);
+      const num = jamarSample.convert19bitAsInt32(buf1);
       num.should.be.approximately(-1, 1);
     });
     it('converts a large negative number', function () {
       const buf1 = new Buffer([0x04, 0xA1, 0x01]); // 0x04A101 === -220927
-      const num = ganglionSample.convert19bitAsInt32(buf1);
+      const num = jamarSample.convert19bitAsInt32(buf1);
       num.should.be.approximately(-220927, 1);
     });
   });
@@ -91,7 +91,7 @@ describe('openBCIGanglionUtils', function () {
           0b00001010  // 17
         ]);
       let expectedValue = [[0, 2, 10, 4], [131074, 245760, 114698, 49162]];
-      let actualValue = ganglionSample.decompressDeltas18Bit(buffer);
+      let actualValue = jamarSample.decompressDeltas18Bit(buffer);
 
       for (let i = 0; i < 4; i++) {
         (actualValue[0][i]).should.equal(expectedValue[0][i]);
@@ -121,7 +121,7 @@ describe('openBCIGanglionUtils', function () {
           0b00000001  // 17
         ]);
       let expectedValue = [[-3, -5, -7, -11], [-262139, -198429, -262137, -4095]];
-      let actualValue = ganglionSample.decompressDeltas18Bit(buffer);
+      let actualValue = jamarSample.decompressDeltas18Bit(buffer);
 
       for (let i = 0; i < 4; i++) {
         (actualValue[0][i]).should.equal(expectedValue[0][i]);
@@ -154,7 +154,7 @@ describe('openBCIGanglionUtils', function () {
           0b00001000  // 18
         ]);
       let expectedValue = [[0, 2, 10, 4], [262148, 507910, 393222, 8]];
-      let actualValue = ganglionSample.decompressDeltas19Bit(buffer);
+      let actualValue = jamarSample.decompressDeltas19Bit(buffer);
       for (let i = 0; i < 4; i++) {
         (actualValue[0][i]).should.equal(expectedValue[0][i]);
         (actualValue[1][i]).should.equal(expectedValue[1][i]);
@@ -184,7 +184,7 @@ describe('openBCIGanglionUtils', function () {
           0b00000001  // 18
         ]);
       let expectedValue = [[-3, -5, -7, -11], [-262139, -198429, -262137, -4095]];
-      let actualValue = ganglionSample.decompressDeltas19Bit(buffer);
+      let actualValue = jamarSample.decompressDeltas19Bit(buffer);
 
       for (let i = 0; i < 4; i++) {
         (actualValue[0][i]).should.equal(expectedValue[0][i]);

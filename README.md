@@ -1,15 +1,15 @@
 [![Join the chat at https://gitter.im/OpenBCI/OpenBCI_NodeJS](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OpenBCI/OpenBCI_NodeJS?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/OpenBCI/OpenBCI_NodeJS_Ganglion.svg?branch=master)](https://travis-ci.org/OpenBCI/OpenBCI_NodeJS_Ganglion)
-[![codecov](https://codecov.io/gh/OpenBCI/OpenBCI_NodeJS_Ganglion/branch/master/graph/badge.svg)](https://codecov.io/gh/OpenBCI/OpenBCI_NodeJS_Ganglion)
-[![Dependency Status](https://david-dm.org/OpenBCI/OpenBCI_NodeJS_Ganglion.svg)](https://david-dm.org/OpenBCI/OpenBCI_NodeJS_Ganglion)
-[![npm](https://img.shields.io/npm/dm/openbci-ganglion.svg?maxAge=2592000)](http://npmjs.com/package/openbci-ganglion)
+[![Build Status](https://travis-ci.org/OpenBCI/OpenBCI_NodeJS_Jamar.svg?branch=master)](https://travis-ci.org/OpenBCI/OpenBCI_NodeJS_Jamar)
+[![codecov](https://codecov.io/gh/OpenBCI/OpenBCI_NodeJS_Jamar/branch/master/graph/badge.svg)](https://codecov.io/gh/OpenBCI/OpenBCI_NodeJS_Jamar)
+[![Dependency Status](https://david-dm.org/OpenBCI/OpenBCI_NodeJS_Jamar.svg)](https://david-dm.org/OpenBCI/OpenBCI_NodeJS_Jamar)
+[![npm](https://img.shields.io/npm/dm/openbci-jamar.svg?maxAge=2592000)](http://npmjs.com/package/openbci-jamar)
 [![js-semistandard-style](https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square)](https://github.com/Flet/semistandard)
 
-# OpenBCI Node.js Ganglion SDK
+# OpenBCI Node.js Jamar SDK
 
 A Node.js module for OpenBCI ~ written with love by [Push The World!](http://www.pushtheworldllc.com)
 
-We are proud to support all functionality of the Ganglion (4 channel). Push The World is actively developing and maintaining this module.
+We are proud to support all functionality of the Jamar (4 channel). Push The World is actively developing and maintaining this module.
 
 The purpose of this module is to **get connected** and **start streaming** as fast as possible.
 
@@ -19,7 +19,7 @@ The purpose of this module is to **get connected** and **start streaming** as fa
 1. [TL;DR](#tldr)
 2. [Prerequisites](#prerequisites)
 3. [Installation](#install)
-4. [Ganglion](#ganglion)
+4. [Jamar](#jamar)
   2. [General Overview](#general-overview)
   3. [SDK Reference Guide](#sdk-reference-guide)
     * [Constructor](#constructor)
@@ -37,25 +37,25 @@ The purpose of this module is to **get connected** and **start streaming** as fa
 Get connected and start streaming right now
 
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
-const ganglion = new Ganglion();
-ganglion.once('ganglionFound', (peripheral) => {
-  // Stop searching for BLE devices once a ganglion is found.
-  ganglion.searchStop();
-  ganglion.on('sample', (sample) => {
+const Jamar = require('openbci-jamar').Jamar;
+const jamar = new Jamar();
+jamar.once('jamarFound', (peripheral) => {
+  // Stop searching for BLE devices once a jamar is found.
+  jamar.searchStop();
+  jamar.on('sample', (sample) => {
     /** Work with sample */
     console.log(sample.sampleNumber);
-    for (let i = 0; i < ganglion.numberOfChannels(); i++) {
+    for (let i = 0; i < jamar.numberOfChannels(); i++) {
       console.log("Channel " + (i + 1) + ": " + sample.channelData[i].toFixed(8) + " Volts.");
     }
   });
-  ganglion.once('ready', () => {
-    ganglion.streamStart();
+  jamar.once('ready', () => {
+    jamar.streamStart();
   });
-  ganglion.connect(peripheral);
+  jamar.connect(peripheral);
 });
 // Start scanning for BLE devices
-ganglion.searchStart();
+jamar.searchStart();
 ```
 
 ## <a name="prerequisites"></a> Prerequisites:
@@ -86,14 +86,14 @@ See [@don](https://github.com/don)'s set up guide on [Bluetooth LE with Node.js 
 ## <a name="install"></a> Installation:
 Install from npm:
 ```
-npm install openbci-ganglion
+npm install openbci-jamar
 ```
 
 ## <a name="about"></a> About:
 
-The Ganglion driver used by OpenBCI's Processing GUI and Electron Hub.
+The Jamar driver used by OpenBCI's Processing GUI and Electron Hub.
 
-Check out the [**_automatic_** tests](https://codecov.io/gh/OpenBCI/OpenBCI_NodeJS_Ganglion) written for it!
+Check out the [**_automatic_** tests](https://codecov.io/gh/OpenBCI/OpenBCI_NodeJS_Jamar) written for it!
 
 ## <a name="general-overview"></a> General Overview:
 
@@ -103,15 +103,15 @@ Initialization
 Initializing the board:
 
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
-const ganglion = new Ganglion();
+const Jamar = require('openbci-jamar').Jamar;
+const jamar = new Jamar();
 ```
 
 For initializing with options, such as verbose print outs:
 
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
-const ourBoard = new Ganglion({
+const Jamar = require('openbci-jamar').Jamar;
+const ourBoard = new Jamar({
   verbose: true
 });
 ```
@@ -119,8 +119,8 @@ const ourBoard = new Ganglion({
 For initializing with callback, such as to catch errors on `noble` startup:
 
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
-const ourBoard = new Ganglion((error) => {
+const Jamar = require('openbci-jamar').Jamar;
+const ourBoard = new Jamar((error) => {
   if (error) {
     console.log("error", error);  
   } else {
@@ -131,8 +131,8 @@ const ourBoard = new Ganglion((error) => {
 For initializing with options and callback, such as verbose and to catch errors on `noble` startup:
 
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
-const ourBoard = new Ganglion({
+const Jamar = require('openbci-jamar').Jamar;
+const ourBoard = new Jamar({
   verbose: true
 },(error) => {
   if (error) {
@@ -151,8 +151,8 @@ You MUST wait for the 'ready' event to be emitted before streaming/talking with 
 so installing the 'sample' listener and writing before the ready event might result in... nothing at all.
 
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
-const ourBoard = new Ganglion();
+const Jamar = require('openbci-jamar').Jamar;
+const ourBoard = new Jamar();
 ourBoard.connect(portName).then(function(boardSerial) {
     ourBoard.on('ready',function() {
         /** Start streaming, reading registers, what ever your heart desires  */
@@ -178,8 +178,8 @@ To get a ['sample'](#event-sample) event, you need to:
 3. In callback for ['ready'](#event-ready) emitter, call [`streamStart()`](#method-stream-start)
 4. Install the ['sample'](#event-sample) event emitter
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
-const ourBoard = new Ganglion();
+const Jamar = require('openbci-jamar').Jamar;
+const ourBoard = new Jamar();
 ourBoard.connect(localName).then(function() {
     ourBoard.on('ready',function() {
         ourBoard.streamStart();
@@ -193,8 +193,8 @@ ourBoard.connect(localName).then(function() {
 ```
 Close the connection with [`.streamStop()`](#method-stream-stop) and disconnect with [`.disconnect()`](#method-disconnect)
 ```js
-const Ganglion = require('openbci-ganglion').Ganglion;
-const ourBoard = new Ganglion();
+const Jamar = require('openbci-jamar').Jamar;
+const ourBoard = new Jamar();
 ourBoard.streamStop().then(ourBoard.disconnect());
 ```
 
@@ -204,9 +204,9 @@ See Reference Guide for a complete list of impedance tests.
 ---------------
 ### <a name="constructor"></a> Constructor:
 
-#### <a name="init"></a> Ganglion (options, callback)
+#### <a name="init"></a> Jamar (options, callback)
 
-Create new instance of a Ganglion board.
+Create new instance of a Jamar board.
 
 **_options (optional)_**
 
@@ -214,7 +214,7 @@ Board optional configurations.
 
 * `debug` {Boolean} - Print out a raw dump of bytes sent and received (Default `false`)
 * `nobleAutoStart` {Boolean} - Automatically initialize `noble`. Subscribes to blue tooth state changes and such. (Default `true`)
-* `nobleScanOnPowerOn` {Boolean} - Start scanning for Ganglion BLE devices as soon as power turns on.  (Default `true`)
+* `nobleScanOnPowerOn` {Boolean} - Start scanning for Jamar BLE devices as soon as power turns on.  (Default `true`)
 * `sendCounts` {Boolean} - Send integer raw counts instead of scaled floats. (Default `false`)
 * `simulate` {Boolean} - Full functionality, just mock data. Must attach Daisy module by setting `simulatorDaisyModuleAttached` to `true` in order to get 16 channels. (Default `false`)
 * `simulatorBoardFailure` {Boolean} - Simulates board communications failure. This occurs when the RFduino on the board is not polling the RFduino on the dongle. (Default `false`)
@@ -277,7 +277,7 @@ A number (1-4) specifying which channel you want to turn on.
 
 #### <a name="method-connect"></a> .connect(portName)
 
-The essential precursor method to be called initially to establish a ble connection to the OpenBCI ganglion board.
+The essential precursor method to be called initially to establish a ble connection to the OpenBCI jamar board.
 
 **_id_** {String | Object}
 
@@ -301,7 +301,7 @@ Closes the connection to the board. Waits for stop streaming command to be sent 
 
 #### <a name="method-get-local-name"></a> .getLocalName()
 
-Gets the local name of the attached Ganglion device. This is only valid after [`.connect()`](#method-connect)
+Gets the local name of the attached Jamar device. This is only valid after [`.connect()`](#method-connect)
 
 **_Returns_** {null|String} - The local name.
 
@@ -369,7 +369,7 @@ Get the current sample rate.
 
 #### <a name="method-search-start"></a> .searchStart()
 
-Call to make `noble` start scanning for Ganglions.
+Call to make `noble` start scanning for Jamars.
 
 **_maxSearchTime_** {Number}
 
@@ -379,7 +379,7 @@ The amount of time to spend searching. (Default is 20 seconds)
 
 #### <a name="method-search-stop"></a> .searchStop()
 
-Call to make `noble` stop scanning for Ganglions.
+Call to make `noble` stop scanning for Jamars.
 
 **_Returns_** {Promise} - fulfilled if scan was stopped.
 
@@ -579,9 +579,9 @@ Emitted when a noble scan is stopped.
 
 [LabStreamingLayer](https://github.com/sccn/labstreaminglayer) is a tool for streaming or recording time-series data. It can be used to interface with [Matlab](https://github.com/sccn/labstreaminglayer/tree/master/LSL/liblsl-Matlab), [Python](https://github.com/sccn/labstreaminglayer/tree/master/LSL/liblsl-Python), [Unity](https://github.com/xfleckx/LSL4Unity), and many other programs.
 
-To use LSL with the NodeJS SDK, go to our [labstreaminglayer example](https://github.com/OpenBCI/OpenBCI_NodeJS_Ganglion/tree/master/examples/labstreaminglayer), which contains code that is ready to start an LSL stream of OpenBCI data.
+To use LSL with the NodeJS SDK, go to our [labstreaminglayer example](https://github.com/OpenBCI/OpenBCI_NodeJS_Jamar/tree/master/examples/labstreaminglayer), which contains code that is ready to start an LSL stream of OpenBCI data.
 
-Follow the directions in the [readme](https://github.com/OpenBCI/OpenBCI_NodeJS_Ganglion/blob/master/examples/labstreaminglayer/readme.md) to get started.
+Follow the directions in the [readme](https://github.com/OpenBCI/OpenBCI_NodeJS_Jamar/blob/master/examples/labstreaminglayer/readme.md) to get started.
 
 
 ## <a name="developing"></a> Developing:

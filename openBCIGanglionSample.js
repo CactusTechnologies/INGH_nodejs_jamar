@@ -1,5 +1,5 @@
 'use strict';
-const k = require('./openBCIConstants');
+const k = require('./jamarConstants');
 
 module.exports = {
   convert18bitAsInt32,
@@ -32,26 +32,26 @@ module.exports = {
       ]);
   },
   sampleImpedanceChannel1: () => {
-    return new Buffer([k.OBCIGanglionByteIdImpedanceChannel1, 0, 0, 1]);
+    return new Buffer([k.OBCIJamarByteIdImpedanceChannel1, 0, 0, 1]);
   },
   sampleImpedanceChannel2: () => {
-    return new Buffer([k.OBCIGanglionByteIdImpedanceChannel2, 0, 0, 1]);
+    return new Buffer([k.OBCIJamarByteIdImpedanceChannel2, 0, 0, 1]);
   },
   sampleImpedanceChannel3: () => {
-    return new Buffer([k.OBCIGanglionByteIdImpedanceChannel3, 0, 0, 1]);
+    return new Buffer([k.OBCIJamarByteIdImpedanceChannel3, 0, 0, 1]);
   },
   sampleImpedanceChannel4: () => {
-    return new Buffer([k.OBCIGanglionByteIdImpedanceChannel4, 0, 0, 1]);
+    return new Buffer([k.OBCIJamarByteIdImpedanceChannel4, 0, 0, 1]);
   },
   sampleImpedanceChannelReference: () => {
-    return new Buffer([k.OBCIGanglionByteIdImpedanceChannelReference, 0, 0, 1]);
+    return new Buffer([k.OBCIJamarByteIdImpedanceChannelReference, 0, 0, 1]);
   },
   sampleMultiBytePacket: (data) => {
-    const bufPre = new Buffer([k.OBCIGanglionByteIdMultiPacket]);
+    const bufPre = new Buffer([k.OBCIJamarByteIdMultiPacket]);
     return Buffer.concat([bufPre, data]);
   },
   sampleMultiBytePacketStop: (data) => {
-    const bufPre = new Buffer([k.OBCIGanglionByteIdMultiPacketStop]);
+    const bufPre = new Buffer([k.OBCIJamarByteIdMultiPacketStop]);
     return Buffer.concat([bufPre, data]);
   },
   sampleOtherData: (data) => {
@@ -103,7 +103,7 @@ function interpret16bitAsInt32 (twoByteBuffer) {
 }
 
 /**
- * Converts a special ganglion 18 bit compressed number
+ * Converts a special jamar 18 bit compressed number
  *  The compressions uses the LSB, bit 1, as the signed bit, instead of using
  *  the MSB. Therefore you must not look to the MSB for a sign extension, one
  *  must look to the LSB, and the same rules applies, if it's a 1, then it's a
@@ -124,7 +124,7 @@ function convert18bitAsInt32 (threeByteBuffer) {
 }
 
 /**
- * Converts a special ganglion 19 bit compressed number
+ * Converts a special jamar 19 bit compressed number
  *  The compressions uses the LSB, bit 1, as the signed bit, instead of using
  *  the MSB. Therefore you must not look to the MSB for a sign extension, one
  *  must look to the LSB, and the same rules applies, if it's a 1, then it's a
@@ -152,12 +152,12 @@ function convert19bitAsInt32 (threeByteBuffer) {
  * @private
  */
 function decompressDeltas18Bit (buffer) {
-  let D = new Array(k.OBCIGanglionSamplesPerPacket); // 2
+  let D = new Array(k.OBCIJamarSamplesPerPacket); // 2
   D[0] = [0, 0, 0, 0];
   D[1] = [0, 0, 0, 0];
 
   let receivedDeltas = [];
-  for (let i = 0; i < k.OBCIGanglionSamplesPerPacket; i++) {
+  for (let i = 0; i < k.OBCIJamarSamplesPerPacket; i++) {
     receivedDeltas.push([0, 0, 0, 0]);
   }
 
@@ -243,12 +243,12 @@ function decompressDeltas18Bit (buffer) {
  * @private
  */
 function decompressDeltas19Bit (buffer) {
-  let D = new Array(k.OBCIGanglionSamplesPerPacket); // 2
+  let D = new Array(k.OBCIJamarSamplesPerPacket); // 2
   D[0] = [0, 0, 0, 0];
   D[1] = [0, 0, 0, 0];
 
   let receivedDeltas = [];
-  for (let i = 0; i < k.OBCIGanglionSamplesPerPacket; i++) {
+  for (let i = 0; i < k.OBCIJamarSamplesPerPacket; i++) {
     receivedDeltas.push([0, 0, 0, 0]);
   }
 
