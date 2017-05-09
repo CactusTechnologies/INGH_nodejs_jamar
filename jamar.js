@@ -11,7 +11,7 @@ const _options = {
   debug: false,
   nobleAutoStart: true,
   nobleScanOnPowerOn: true,
-  verbose: false
+  verbose: true
 };
 
 /**
@@ -111,7 +111,7 @@ function Jamar (options, callback) {
   this._multiPacketBuffer = null;
   this._packetCounter = k.OBCIJamarByteId18Bit.max;
   this._peripheral = null;
-  this._rfduinoService = null;
+  this._jamarService = null;
   this._receiveCharacteristic = null;
   this._scanning = false;
   this._sendCharacteristic = null;
@@ -197,7 +197,7 @@ Jamar.prototype.channelOn = function (channelNumber) {
 
 /**
  * @description The essential precursor method to be called initially to establish a
- *              ble connection to the OpenBCI jamar board.
+ *              ble connection to the jamar.
  * @param id {String | Object} - a string local name or peripheral object
  * @returns {Promise} If the board was able to connect.
  * @author AJ Keller (@pushtheworldllc)
@@ -505,7 +505,7 @@ Jamar.prototype.write = function (data) {
         if (err) {
           reject(err);
         } else {
-          if (this.options.debug) openBCIUtils.debugBytes('>>>', data);
+          // if (this.options.debug) openBCIUtils.debugBytes('>>>', data);
           resolve();
         }
       });
@@ -574,11 +574,11 @@ Jamar.prototype._disconnected = function () {
 
   this._receiveCharacteristic = null;
 
-  if (this._rfduinoService) {
-    this._rfduinoService.removeAllListeners(k.OBCINobleEmitterServiceCharacteristicsDiscover);
+  if (this._jamarService) {
+    this._jamarService.removeAllListeners(k.OBCINobleEmitterServiceCharacteristicsDiscover);
   }
 
-  this._rfduinoService = null;
+  this._jamarService = null;
 
   if (this._peripheral) {
     this._peripheral.removeAllListeners(k.OBCINobleEmitterPeripheralConnect);
@@ -619,12 +619,12 @@ Jamar.prototype._nobleConnect = function (peripheral) {
     // here is where we can capture the advertisement data from the rfduino and check to make sure its ours
     if (this.options.verbose) console.log('Device is advertising \'' + this._peripheral.advertisement.localName + '\' service.');
     // TODO: filter based on advertising name ie make sure we are looking for the right thing
-    // if (this.options.verbose) console.log("serviceUUID: " + this._peripheral.advertisement.serviceUuids);
+    if (this.options.verbose) console.log("serviceUUID: " + this._peripheral.advertisement.serviceUuids);
 
     this._peripheral.on(k.OBCINobleEmitterPeripheralConnect, () => {
-      // if (this.options.verbose) console.log("got connect event");
-      this._peripheral.discoverServices();
-      if (this.isSearching()) this._nobleScanStop();
+      if (this.options.verbose) console.log("got connect event");
+      this._peripheral.discoverServices()
+      if (this.isSearching()) this._nobleScanStop()
     });
 
     this._peripheral.on(k.OBCINobleEmitterPeripheralDisconnect, () => {
@@ -635,26 +635,29 @@ Jamar.prototype._nobleConnect = function (peripheral) {
     this._peripheral.on(k.OBCINobleEmitterPeripheralServicesDiscover, (services) => {
 
       for (var i = 0; i < services.length; i++) {
-        if (services[i].uuid === k.SimbleeUuidService) {
-          this._rfduinoService = services[i];
-          // if (this.options.verbose) console.log("Found simblee Service");
+        if (this.options.verbose) console.log(services[i].uuid)
+        if (services[i].uuid === k.jamarUuidService) {
+          this._jamarService = services[i];
+          if (this.options.verbose) console.log("[JAMAR] Found Jamar service");
           break;
         }
       }
 
-      if (!this._rfduinoService) {
-        reject('Couldn\'t find the simblee service.');
+      if (!this._jamarService) {
+        reject('[JAMAR] Could not find the Jamar service.');
       }
 
-      this._rfduinoService.once(k.OBCINobleEmitterServiceCharacteristicsDiscover, (characteristics) => {
+      this._jamarService.once(k.OBCINobleEmitterServiceCharacteristicsDiscover, (characteristics) => {
         if (this.options.verbose) console.log('Discovered ' + characteristics.length + ' service characteristics');
         for (var i = 0; i < characteristics.length; i++) {
-          // console.log(characteristics[i].uuid);
-          if (characteristics[i].uuid === k.SimbleeUuidReceive) {
+          console.log(characteristics[i].uuid)
+
+          // TODO: Figure out how to pull data out of this section
+          if (characteristics[i].uuid === k.jamarUuidReceive) {
             if (this.options.verbose) console.log("Found receiveCharacteristicUUID");
             this._receiveCharacteristic = characteristics[i];
           }
-          if (characteristics[i].uuid === k.SimbleeUuidSend) {
+          if (characteristics[i].uuid === k.jamarUuidSend) {
             if (this.options.verbose) console.log("Found sendCharacteristicUUID");
             this._sendCharacteristic = characteristics[i];
           }
@@ -663,21 +666,24 @@ Jamar.prototype._nobleConnect = function (peripheral) {
         if (this._receiveCharacteristic && this._sendCharacteristic) {
           this._receiveCharacteristic.on(k.OBCINobleEmitterServiceRead, (data) => {
             // TODO: handle all the data, both streaming and not
-            this._processBytes(data);
+            console.log(`received data: ${data}`)
+            // this._processBytes(data)
           });
 
-          // if (this.options.verbose) console.log('Subscribing for data notifications');
-          this._receiveCharacteristic.notify(true);
+          if (this.options.verbose) console.log('Subscribing for data notifications');
+          this._receiveCharacteristic.notify(true)
+          // this._sendCharacteristic.notify(true)
 
-          this._connected = true;
-          this.emit(k.OBCIEmitterReady);
-          resolve();
+          this._connected = true
+          this.emit(k.OBCIEmitterReady)
+          resolve()
+
         } else {
           reject('unable to set both receive and send characteristics!');
         }
       });
 
-      this._rfduinoService.discoverCharacteristics();
+      this._jamarService.discoverCharacteristics();
     });
 
     // if (this.options.verbose) console.log("Calling connect");
@@ -764,8 +770,8 @@ Jamar.prototype._nobleScanStart = function () {
       this.emit(k.OBCINobleEmitterScanStart);
       resolve();
     });
-    // Only look so simblee ble devices and allow duplicates (multiple jamars)
-    // noble.startScanning([k.SimbleeUuidService], true);
+    // Only look so jamar ble devices and allow duplicates (multiple jamars)
+    // noble.startScanning([k.jamarUuidService], true);
     noble.startScanning([], false);
   });
 };
@@ -797,7 +803,7 @@ Jamar.prototype._nobleScanStop = function () {
  * @private
  */
 Jamar.prototype._processBytes = function (data) {
-  if (this.options.debug) openBCIUtils.debugBytes('<<', data);
+  // if (this.options.debug) openBCIUtils.debugBytes('<<', data);
   this.lastPacket = data;
   let byteId = parseInt(data[0]);
   if (byteId <= k.OBCIJamarByteId19Bit.max) {
@@ -878,7 +884,7 @@ Jamar.prototype._processCompressedData = function (data) {
  * @private
  */
 Jamar.prototype._processImpedanceData = function (data) {
-  if (this.options.debug) openBCIUtils.debugBytes('Impedance <<< ', data);
+  // if (this.options.debug) openBCIUtils.debugBytes('Impedance <<< ', data);
   const byteId = parseInt(data[0]);
   let channelNumber;
   switch (byteId) {
@@ -1024,7 +1030,7 @@ Jamar.prototype._processRouteSampleData = function(data) {
  * @private
  */
 Jamar.prototype._processOtherData = function (data) {
-  openBCIUtils.debugBytes('OtherData <<< ', data);
+  // openBCIUtils.debugBytes('OtherData <<< ', data);
 };
 
 /**

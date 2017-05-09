@@ -179,11 +179,37 @@ const obciJamarImpedanceStart = 'z';
 const obciJamarImpedanceStop = 'Z';
 const obciJamarScaleFactorPerCountVolts = obciJamarMCP3912Vref / (8388607.0 * obciJamarMCP3912Gain * 1.5 * 51.0);
 
-/** Simblee */
-const simbleeUuidService = 'fe84';
-const simbleeUuidReceive = '2d30c082f39f4ce6923f3484ea480596';
-const simbleeUuidSend = '2d30c083f39f4ce6923f3484ea480596';
-const simbleeUuidDisconnect = '2d30c084f39f4ce6923f3484ea480596';
+/** Jamar */
+const jamarUuidService = '6e400001b5a3f393e0a9e50e24dcca9e'
+const jamarUuidReceive = '6e400003b5a3f393e0a9e50e24dcca9e'
+const jamarUuidSend = '6e400002b5a3f393e0a9e50e24dcca9e'
+const jamarUuidDisconnect = '2a04'
+
+// [NEW] Primary Service
+//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0008
+//         00001801-0000-1000-8000-00805f9b34fb
+//         Generic Attribute Profile
+// [NEW] Primary Service
+//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0009
+//         6e400001-b5a3-f393-e0a9-e50e24dcca9e
+//         Vendor specific
+// [NEW] Characteristic
+//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0009/char000a
+//         6e400003-b5a3-f393-e0a9-e50e24dcca9e
+//         Vendor specific
+// [NEW] Descriptor
+//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0009/char000a/desc000c
+//         00002902-0000-1000-8000-00805f9b34fb
+//         Client Characteristic Configuration
+// [NEW] Characteristic
+//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0009/char000d
+//         6e400002-b5a3-f393-e0a9-e50e24dcca9e
+//         Vendor specific
+// [CHG] Device EB:BA:2C:C9:5C:6C UUIDs: 00001800-0000-1000-8000-00805f9b34fb
+// [CHG] Device EB:BA:2C:C9:5C:6C UUIDs: 00001801-0000-1000-8000-00805f9b34fb
+// [CHG] Device EB:BA:2C:C9:5C:6C UUIDs: 6e400001-b5a3-f393-e0a9-e50e24dcca9e
+// [CHG] Device EB:BA:2C:C9:5C:6C ServicesResolved: yes
+
 
 /** Noble */
 const obciNobleEmitterPeripheralConnect = 'connect';
@@ -428,11 +454,13 @@ module.exports = {
   OBCIJamarImpedanceStart: obciJamarImpedanceStart,
   OBCIJamarImpedanceStop: obciJamarImpedanceStop,
   OBCIJamarScaleFactorPerCountVolts: obciJamarScaleFactorPerCountVolts,
-  /** Simblee */
-  SimbleeUuidService: simbleeUuidService,
-  SimbleeUuidReceive: simbleeUuidReceive,
-  SimbleeUuidSend: simbleeUuidSend,
-  SimbleeUuidDisconnect: simbleeUuidDisconnect,
+
+  /** jamar */
+  jamarUuidService: jamarUuidService,
+  jamarUuidReceive: jamarUuidReceive,
+  jamarUuidSend: jamarUuidSend,
+  jamarUuidDisconnect: jamarUuidDisconnect,
+
   /** Noble */
   OBCINobleEmitterPeripheralConnect: obciNobleEmitterPeripheralConnect,
   OBCINobleEmitterPeripheralDisconnect: obciNobleEmitterPeripheralDisconnect,

@@ -412,7 +412,7 @@ describe('OpenBCIConstants', function () {
       assert.equal(207, k.OBCIJamarByteIdMultiPacketStop);
     });
   });
-  describe('simblee', function () {
+  describe('jamar', function () {
     it('Service', function () {
       assert.equal('fe84', k.SimbleeUuidService);
     });
