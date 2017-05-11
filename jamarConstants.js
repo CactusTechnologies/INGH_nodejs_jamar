@@ -185,31 +185,11 @@ const jamarUuidReceive = '6e400003b5a3f393e0a9e50e24dcca9e'
 const jamarUuidSend = '6e400002b5a3f393e0a9e50e24dcca9e'
 const jamarUuidDisconnect = '2a04'
 
-// [NEW] Primary Service
-//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0008
-//         00001801-0000-1000-8000-00805f9b34fb
-//         Generic Attribute Profile
-// [NEW] Primary Service
-//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0009
-//         6e400001-b5a3-f393-e0a9-e50e24dcca9e
-//         Vendor specific
-// [NEW] Characteristic
-//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0009/char000a
-//         6e400003-b5a3-f393-e0a9-e50e24dcca9e
-//         Vendor specific
-// [NEW] Descriptor
-//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0009/char000a/desc000c
-//         00002902-0000-1000-8000-00805f9b34fb
-//         Client Characteristic Configuration
-// [NEW] Characteristic
-//         /org/bluez/hci0/dev_EB_BA_2C_C9_5C_6C/service0009/char000d
-//         6e400002-b5a3-f393-e0a9-e50e24dcca9e
-//         Vendor specific
-// [CHG] Device EB:BA:2C:C9:5C:6C UUIDs: 00001800-0000-1000-8000-00805f9b34fb
-// [CHG] Device EB:BA:2C:C9:5C:6C UUIDs: 00001801-0000-1000-8000-00805f9b34fb
-// [CHG] Device EB:BA:2C:C9:5C:6C UUIDs: 6e400001-b5a3-f393-e0a9-e50e24dcca9e
-// [CHG] Device EB:BA:2C:C9:5C:6C ServicesResolved: yes
-
+/* OSC */
+const OSClocalAddress = '127.0.0.1'
+const OSClocalPort = 57121
+const OSCremoteAddress = '127.0.0.1'
+const OSCremotePort = 57119
 
 /** Noble */
 const obciNobleEmitterPeripheralConnect = 'connect';
@@ -225,6 +205,12 @@ const obciNobleEmitterStateChange = 'stateChange';
 const obciNobleStatePoweredOn = 'poweredOn';
 
 module.exports = {
+  /* OSC */
+  OSCLocalAddress: OSClocalAddress,
+  OSCLocalPort: OSClocalPort,
+  OSCRemoteAddress: OSCremoteAddress,
+  OSCRemotePort: OSCremotePort,
+
   /** Turning channels off */
   OBCIChannelOff1: obciChannelOff1,
   OBCIChannelOff2: obciChannelOff2,

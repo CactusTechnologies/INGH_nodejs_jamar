@@ -1,5 +1,6 @@
 const Jamar = require('../../index').Jamar
 const k = require('../../jamarConstants')
+const osc = require('osc')
 const verbose = true
 let jamar = new Jamar({
   debug: true,
@@ -15,62 +16,55 @@ function errorFunc (err) {
 const impedance = false
 const accel = false
 
+//OSC STUFF
+let udpPort = new osc.UDPPort({
+    // This is the port we're listening on.
+    localAddress: k.OSCLocalAddress,
+    localPort: k.OSCLocalPort,
+
+    // This is the address of the OSC receiver
+    remoteAddress: k.OSCRemoteAddress,
+    remotePort: k.OSCRemotePort,
+    metadata: true
+})
+
+udpPort.open()
+
+
 const fullGangFunc = () => {
   console.log('[JAMARCONNECT] running application')
 
   jamar.once(k.OBCIEmitterJamarFound, (peripheral) => {
-    console.log('[JAMARCONNECT] connected to jamar')
-    // let droppedPacketCounter = 0
-    // let secondCounter = 0
-    // let buf = []
-    // let sizeOfBuf = 0
+    console.log('[JAMARCONNECT] connected to jamar...')
 
-    // jamar.on('sample', (sample) => {
-    //   /** Work with sample */
-    //   console.log(sample.sampleNumber)
-    // })
-    //
-    // jamar.on('droppedPacket', (data) => {
-    //   console.log('droppedPacket:', data)
-    //   droppedPacketCounter++
-    // })
-    //
-    // jamar.on('message', (message) => {
-    //   // console.log('message: ', message.toString())
-    // })
-    //
-    // let lastVal = 0
-    // jamar.on('accelerometer', (accelData) => {
-    //   // Use accel array [0, 0, 0]
-    //   // console.log(`counter: ${accelData[2]}`)
-    // })
-    //
-    // jamar.on('impedance', (impedanceObj) => {
-    //   console.log(`channel ${impedanceObj.channelNumber} has impedance ${impedanceObj.impedanceValue}`)
-    // })
-    //
+    /* Event Handlers */
+
+    //BLUETOOTH COMES IN, SENT OUT AS OSC
+    jamar.on('data', (data) => {
+      console.log(`[JAMARCONNECT] DATA: ${data}`)
+      let msg = {
+        address: '/jamar/data',
+        args: [
+            {
+                type: "f",
+                value: data
+            }
+        ]
+      }
+      console.log("Sending message", msg.address, msg.args, "to", udpPort.options.remoteAddress + ":" + udpPort.options.remotePort)
+      udpPort.send(msg)
+    })
+
     jamar.once('ready', () => {
-      console.log('[JAMAR] ready to receive strength data...')
-      // if (accel) {
-      //   jamar.accelStart()
-      //     .then(() => {
-      //       return jamar.streamStart()
-      //     })
-      //     .catch(errorFunc)
-      // } else if (impedance) {
-      //   jamar.impedanceStart().catch(errorFunc)
-      // } else {
-      //   jamar.streamStart().catch(errorFunc)
-      // }
+      console.log('[JAMARCONNECT] ready to receive strength data..')
     })
 
     jamar.searchStop()
       .then(() => {
-        console.log(`search stopped`)
+        console.log(`[JAMARCONNECT] search stopped`)
         jamar.connect(peripheral).catch(errorFunc)
       })
       .catch(errorFunc)
-
   })
 
     /* Start searching */
@@ -78,15 +72,15 @@ const fullGangFunc = () => {
       jamar.searchStart().catch(errorFunc)
   }
 
-  jamar.once(k.OBCIEmitterBlePoweredUp, startSearchFunc)
+    jamar.once(k.OBCIEmitterBlePoweredUp, startSearchFunc)
 
-  // ENTRY POINT
+    /* Entry Point */
   if (jamar.isNobleReady()) {
-    console.log(`noble is ready so starting scan...`)
+    console.log(`[JAMARCONNECT] noble is ready so starting scan...`)
     jamar.removeListener(k.OBCIEmitterBlePoweredUp, startSearchFunc)
     startSearchFunc()
   } else {
-    console.log(`noble is NOT ready so waiting starting scan`)
+    console.log(`[JAMARCONNECT] noble is NOT ready, waiting to start scan...`)
   }
 }
 
@@ -99,10 +93,7 @@ let startFunc = () => {
 let stopFunc = () => {
   console.log(`[JAMARCONNECT] disconnecting ${index}`)
   jamar.removeAllListeners('sample')
-  jamar.removeAllListeners('droppedPacket')
   jamar.removeAllListeners('message')
-  jamar.removeAllListeners('accelerometer')
-  jamar.removeAllListeners('impedance')
   jamar.removeAllListeners(k.OBCIEmitterJamarFound)
   jamar.removeAllListeners('ready')
   if (jamar.isConnected()) {
