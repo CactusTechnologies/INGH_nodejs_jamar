@@ -105,20 +105,20 @@ function Jamar (options, callback) {
   this._decompressedSamples = new Array(3)
   this._droppedPacketCounter = 0
   this._firstPacket = true
+  this._jamarService = null
   this._lastDroppedPacket = null
   this._lastPacket = null
   this._localName = null
   this._multiPacketBuffer = null
   this._peripheral = null
-  this._jamarService = null
   this._receiveCharacteristic = null
   this._scanning = false
   this._sendCharacteristic = null
   this._streaming = false
 
   /** Public Properties (keep alphabetical) */
-  this.peripheralArray = []
   this.jamarPeripheralArray = []
+  this.peripheralArray = []
   this.previousPeripheralArray = []
   this.manualDisconnect = false
 
@@ -140,23 +140,6 @@ function Jamar (options, callback) {
 util.inherits(Jamar, EventEmitter)
 
 /**
- * Used to enable the accelerometer. Will result in accelerometer packets arriving 10 times a second.
- *  Note that the accelerometer is enabled by default.
- * @return {Promise}
- */
-Jamar.prototype.accelStart = function () {
-  return this.write(k.OBCIAccelStart)
-}
-
-/**
- * Used to disable the accelerometer. Prevents accelerometer data packets from arriving.
- * @return {Promise}
- */
-Jamar.prototype.accelStop = function () {
-  return this.write(k.OBCIAccelStop)
-}
-
-/**
  * Used to start a scan if power is on. Useful if a connection is dropped.
  */
 Jamar.prototype.autoReconnect = function () {
@@ -166,32 +149,6 @@ Jamar.prototype.autoReconnect = function () {
   } else {
     console.warn('BLE not AVAILABLE')
   }
-}
-
-/**
- * @description Send a command to the board to turn a specified channel off
- * @param channelNumber
- * @returns {Promise.<T>}
- * @author AJ Keller (@pushtheworldllc)
- */
-Jamar.prototype.channelOff = function (channelNumber) {
-  return k.commandChannelOff(channelNumber).then((charCommand) => {
-    // console.log('sent command to turn channel ' + channelNumber + ' by sending command ' + charCommand)
-    return this.write(charCommand)
-  })
-}
-
-/**
- * @description Send a command to the board to turn a specified channel on
- * @param channelNumber
- * @returns {Promise.<T>|*}
- * @author AJ Keller (@pushtheworldllc)
- */
-Jamar.prototype.channelOn = function (channelNumber) {
-  return k.commandChannelOn(channelNumber).then((charCommand) => {
-    // console.log('sent command to turn channel ' + channelNumber + ' by sending command ' + charCommand)
-    return this.write(charCommand)
-  })
 }
 
 /**
@@ -225,13 +182,6 @@ Jamar.prototype.connect = function (id) {
  */
 Jamar.prototype.destroyNoble = function () {
   this._nobleDestroy()
-}
-
-/**
- * Destroys the multi packet buffer.
- */
-Jamar.prototype.destroyMultiPacketBuffer = function () {
-  this._multiPacketBuffer = null
 }
 
 /**
@@ -282,30 +232,6 @@ Jamar.prototype.getLocalName = function () {
 }
 
 /**
- * Get's the multi packet buffer.
- * @return {null|Buffer} - Can be null if no multi packets received.
- */
-Jamar.prototype.getMutliPacketBuffer = function () {
-  return this._multiPacketBuffer
-}
-
-/**
- * Call to start testing impedance.
- * @return {global.Promise|Promise}
- */
-Jamar.prototype.impedanceStart = function () {
-  return this.write(k.OBCIJamarImpedanceStart)
-}
-
-/**
- * Call to stop testing impedance.
- * @return {global.Promise|Promise}
- */
-Jamar.prototype.impedanceStop = function () {
-  return this.write(k.OBCIJamarImpedanceStop)
-}
-
-/**
  * @description Checks if the driver is connected to a board.
  * @returns {boolean} - True if connected.
  */
@@ -335,39 +261,6 @@ Jamar.prototype.isSearching = function () {
  */
 Jamar.prototype.isStreaming = function () {
   return this._streaming
-}
-
-/**
- * @description This function is used as a convenience method to determine how many
- *              channels the current board is using.
- * @returns {Number} A number
- * Note: This is dependent on if you configured the board correctly on setup options
- * @author AJ Keller (@pushtheworldllc)
- */
-Jamar.prototype.numberOfChannels = function () {
-  return k.OBCINumberOfChannelsJamar
-}
-
-/**
- * @description To print out the register settings to the console
- * @returns {Promise.<T>|*}
- * @author AJ Keller (@pushtheworldllc)
- */
-Jamar.prototype.printRegisterSettings = function () {
-  return this.write(k.OBCIMiscQueryRegisterSettings)
-}
-
-/**
- * @description Get the the current sample rate is.
- * @returns {Number} The sample rate
- * Note: This is dependent on if you configured the board correctly on setup options
- */
-Jamar.prototype.sampleRate = function () {
-  if (this.options.simulate) {
-    return this.options.simulatorSampleRate
-  } else {
-    return k.OBCISampleRate200
-  }
 }
 
 /**
@@ -404,15 +297,6 @@ Jamar.prototype.searchStart = function (maxSearchTime) {
  */
 Jamar.prototype.searchStop = function () {
   return this._nobleScanStop()
-}
-
-/**
- * @description Sends a soft reset command to the board
- * @returns {Promise} - Fulfilled if the command was sent to board.
- * @author AJ Keller (@pushtheworldllc)
- */
-Jamar.prototype.softReset = function () {
-  return this.write(k.OBCIMiscSoftReset)
 }
 
 /**
@@ -457,38 +341,6 @@ Jamar.prototype.streamStop = function () {
 }
 
 /**
- * @description Puts the board in synthetic data generation mode. Must call streamStart still.
- * @returns {Promise} indicating if the signal was able to be sent.
- * @author AJ Keller (@pushtheworldllc)
- */
-Jamar.prototype.syntheticEnable = function () {
-  return new Promise((resolve, reject) => {
-    this.write(k.OBCIJamarSyntheticDataEnable)
-      .then(() => {
-        if (this.options.verbose) console.log('Enabled synthetic data mode.')
-        resolve()
-      })
-      .catch(reject)
-  })
-}
-
-/**
- * @description Takes the board out of synthetic data generation mode. Must call streamStart still.
- * @returns {Promise} - fulfilled if the command was sent.
- * @author AJ Keller (@pushtheworldllc)
- */
-Jamar.prototype.syntheticDisable = function () {
-  return new Promise((resolve, reject) => {
-    this.write(k.OBCIJamarSyntheticDataDisable)
-      .then(() => {
-        if (this.options.verbose) console.log('Disabled synthetic data mode.')
-        resolve()
-      })
-      .catch(reject)
-  })
-}
-
-/**
  * @description Used to send data to the board.
  * @param data {Array | Buffer | Number | String} - The data to write out
  * @returns {Promise} - fulfilled if command was able to be sent
@@ -517,44 +369,6 @@ Jamar.prototype.write = function (data) {
 // //////// //
 // PRIVATES //
 // //////// //
-/**
- * Builds a sample object from an array and sample number.
- * @param sampleNumber
- * @param rawData
- * @return {{sampleNumber: *}}
- * @private
- */
-Jamar.prototype._buildSample = function (sampleNumber, rawData) {
-  let sample = {
-    sampleNumber: sampleNumber,
-    timeStamp: Date.now()
-  }
-  if (this.options.sendCounts) {
-    sample['channelDataCounts'] = rawData
-  } else {
-    sample['channelData'] = []
-    for (let j = 0; j < k.OBCINumberOfChannelsJamar; j++) {
-      sample.channelData.push(rawData[j] * k.OBCIJamarScaleFactorPerCountVolts)
-    }
-  }
-  return sample
-}
-
-/**
- * Utilize `receivedDeltas` to get actual count values.
- * @param receivedDeltas {Array} - An array of deltas
- *  of shape 2x4 (2 samples per packet and 4 channels per sample.)
- * @private
- */
-Jamar.prototype._decompressSamples = function (receivedDeltas) {
-  // add the delta to the previous value
-  for (let i = 1; i < 3; i++) {
-    for (let j = 0; j < 4; j++) {
-      this._decompressedSamples[i][j] = this._decompressedSamples[i - 1][j] - receivedDeltas[i - 1][j]
-    }
-  }
-}
-
 /**
  * @description Called once when for any reason the ble connection is no longer open.
  * @private
@@ -796,275 +610,4 @@ Jamar.prototype._processData = function (data) {
   this.emit('data', parseFloat(data.slice(8)))
 }
 
-/**
- * Route incoming data to proper functions
- * @param data {Buffer} - Data buffer from noble Jamar.
- * @private
- */
-Jamar.prototype._processBytes = function (data) {
-  // if (this.options.debug) openBCIUtils.debugBytes('<<', data)
-  this.lastPacket = data
-  let byteId = parseInt(data[0])
-  if (byteId <= k.OBCIJamarByteId19Bit.max) {
-    this._processProcessSampleData(data)
-  } else {
-    switch (byteId) {
-      case k.OBCIJamarByteIdMultiPacket:
-        this._processMultiBytePacket(data)
-        break
-      case k.OBCIJamarByteIdMultiPacketStop:
-        this._processMultiBytePacketStop(data)
-        break
-      case k.OBCIJamarByteIdImpedanceChannel1:
-      case k.OBCIJamarByteIdImpedanceChannel2:
-      case k.OBCIJamarByteIdImpedanceChannel3:
-      case k.OBCIJamarByteIdImpedanceChannel4:
-      case k.OBCIJamarByteIdImpedanceChannelReference:
-        this._processImpedanceData(data)
-        break
-      default:
-        this._processOtherData(data)
-    }
-  }
-}
-
-/**
- * Process an compressed packet of data.
- * @param data {Buffer}
- *  Data packet buffer from noble.
- * @private
- */
-Jamar.prototype._processCompressedData = function (data) {
-  // Save the packet counter
-  this._packetCounter = parseInt(data[0])
-
-  // Decompress the buffer into array
-  if (this._packetCounter <= k.OBCIJamarByteId18Bit.max) {
-    this._decompressSamples(jamarSample.decompressDeltas18Bit(data.slice(k.OBCIJamarPacket18Bit.dataStart, k.OBCIJamarPacket18Bit.dataStop)))
-    switch (this._packetCounter % 10) {
-      case k.OBCIJamarAccelAxisX:
-        this._accelArray[0] = this.options.sendCounts ? data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) * k.OBCIJamarAccelScaleFactor
-        break
-      case k.OBCIJamarAccelAxisY:
-        this._accelArray[1] = this.options.sendCounts ? data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) * k.OBCIJamarAccelScaleFactor
-        break
-      case k.OBCIJamarAccelAxisZ:
-        this._accelArray[2] = this.options.sendCounts ? data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) : data.readInt8(k.OBCIJamarPacket18Bit.auxByte - 1) * k.OBCIJamarAccelScaleFactor
-        this.emit(k.OBCIEmitterAccelerometer, this._accelArray)
-        break
-      default:
-        break
-    }
-    const sample1 = this._buildSample(this._packetCounter * 2 - 1, this._decompressedSamples[1])
-    this.emit(k.OBCIEmitterSample, sample1)
-
-    const sample2 = this._buildSample(this._packetCounter * 2, this._decompressedSamples[2])
-    this.emit(k.OBCIEmitterSample, sample2)
-
-  } else {
-    this._decompressSamples(jamarSample.decompressDeltas19Bit(data.slice(k.OBCIJamarPacket19Bit.dataStart, k.OBCIJamarPacket19Bit.dataStop)))
-
-    const sample1 = this._buildSample((this._packetCounter - 100) * 2 - 1, this._decompressedSamples[1])
-    this.emit(k.OBCIEmitterSample, sample1)
-
-    const sample2 = this._buildSample((this._packetCounter - 100) * 2, this._decompressedSamples[2])
-    this.emit(k.OBCIEmitterSample, sample2)
-  }
-
-  // Rotate the 0 position for next time
-  for (let i = 0; i < k.OBCINumberOfChannelsJamar; i++) {
-    this._decompressedSamples[0][i] = this._decompressedSamples[2][i]
-  }
-}
-
-/**
- * Process and emit an impedance value
- * @param data {Buffer}
- * @private
- */
-Jamar.prototype._processImpedanceData = function (data) {
-  // if (this.options.debug) openBCIUtils.debugBytes('Impedance <<< ', data)
-  const byteId = parseInt(data[0])
-  let channelNumber
-  switch (byteId) {
-    case k.OBCIJamarByteIdImpedanceChannel1:
-      channelNumber = 1
-      break
-    case k.OBCIJamarByteIdImpedanceChannel2:
-      channelNumber = 2
-      break
-    case k.OBCIJamarByteIdImpedanceChannel3:
-      channelNumber = 3
-      break
-    case k.OBCIJamarByteIdImpedanceChannel4:
-      channelNumber = 4
-      break
-    case k.OBCIJamarByteIdImpedanceChannelReference:
-      channelNumber = 0
-      break
-  }
-
-  let output = {
-    channelNumber: channelNumber,
-    impedanceValue: 0
-  }
-
-  let end = data.length
-
-  while (_.isNaN(Number(data.slice(1, end))) && end !== 0) {
-    end--
-  }
-
-  if (end !== 0) {
-    output.impedanceValue = Number(data.slice(1, end))
-  }
-
-  this.emit('impedance', output)
-}
-
-/**
- * Used to stack multi packet buffers into the multi packet buffer. This is finally emitted when a stop packet byte id
- *  is received.
- * @param data {Buffer}
- *  The multi packet buffer.
- * @private
- */
-Jamar.prototype._processMultiBytePacket = function (data) {
-  if (this._multiPacketBuffer) {
-    this._multiPacketBuffer = Buffer.concat([this._multiPacketBuffer, data.slice(k.OBCIJamarPacket19Bit.dataStart, k.OBCIJamarPacket19Bit.dataStop)])
-  } else {
-    this._multiPacketBuffer = data.slice(k.OBCIJamarPacket19Bit.dataStart, k.OBCIJamarPacket19Bit.dataStop)
-  }
-}
-
-/**
- * Adds the `data` buffer to the multi packet buffer and emits the buffer as 'message'
- * @param data {Buffer}
- *  The multi packet stop buffer.
- * @private
- */
-Jamar.prototype._processMultiBytePacketStop = function (data) {
-  this._processMultiBytePacket(data)
-  this.emit(k.OBCIEmitterMessage, this._multiPacketBuffer)
-  this.destroyMultiPacketBuffer()
-}
-
-Jamar.prototype._resetDroppedPacketSystem = function () {
-  this._packetCounter = -1
-  this._firstPacket = true
-  this._droppedPacketCounter = 0
-}
-
-Jamar.prototype._droppedPacket = function (droppedPacketNumber) {
-  this.emit(k.OBCIEmitterDroppedPacket, [droppedPacketNumber])
-  this._droppedPacketCounter++
-}
-
-/**
- * Checks for dropped packets
- * @param data {Buffer}
- * @private
- */
-Jamar.prototype._processProcessSampleData = function(data) {
-  const curByteId = parseInt(data[0])
-  const difByteId = curByteId - this._packetCounter
-
-  if (this._firstPacket) {
-    this._firstPacket = false
-    this._processRouteSampleData(data)
-    return
-  }
-
-  // Wrap around situation
-  if (difByteId < 0) {
-    if (this._packetCounter <= k.OBCIJamarByteId18Bit.max) {
-      if (this._packetCounter === k.OBCIJamarByteId18Bit.max) {
-        if (curByteId !== k.OBCIJamarByteIdUncompressed) {
-          this._droppedPacket(curByteId - 1)
-        }
-      } else {
-        let tempCounter = this._packetCounter + 1
-        while (tempCounter <= k.OBCIJamarByteId18Bit.max) {
-          this._droppedPacket(tempCounter)
-          tempCounter++
-        }
-      }
-    } else if (this._packetCounter === k.OBCIJamarByteId19Bit.max) {
-      if (curByteId !== k.OBCIJamarByteIdUncompressed) {
-        this._droppedPacket(curByteId - 1)
-      }
-    } else {
-      let tempCounter = this._packetCounter + 1
-      while (tempCounter <= k.OBCIJamarByteId19Bit.max) {
-        this._droppedPacket(tempCounter)
-        tempCounter++
-      }
-    }
-  } else if (difByteId > 1) {
-    if (this._packetCounter === k.OBCIJamarByteIdUncompressed && curByteId === k.OBCIJamarByteId19Bit.min) {
-      this._processRouteSampleData(data)
-      return
-    } else {
-      let tempCounter = this._packetCounter + 1
-      while (tempCounter < curByteId) {
-        this._droppedPacket(tempCounter)
-        tempCounter++
-      }
-    }
-  }
-  this._processRouteSampleData(data)
-}
-
-Jamar.prototype._processRouteSampleData = function(data) {
-  if (parseInt(data[0]) === k.OBCIJamarByteIdUncompressed) {
-    this._processUncompressedData(data)
-  } else {
-    this._processCompressedData(data)
-  }
-}
-
-/**
- * The default route when a ByteId is not recognized.
- * @param data {Buffer}
- * @private
- */
-Jamar.prototype._processOtherData = function (data) {
-  // openBCIUtils.debugBytes('OtherData <<< ', data)
-}
-
-/**
- * Process an uncompressed packet of data.
- * @param data {Buffer}
- *  Data packet buffer from noble.
- * @private
- */
-Jamar.prototype._processUncompressedData = function (data) {
-  let start = 1
-
-  // Resets the packet counter back to zero
-  this._packetCounter = k.OBCIJamarByteIdUncompressed  // used to find dropped packets
-  for (let i = 0; i < 4; i++) {
-    this._decompressedSamples[0][i] = interpret24bitAsInt32(data, start)  // seed the decompressor
-    start += 3
-  }
-
-  const newSample = this._buildSample(0, this._decompressedSamples[0])
-  this.emit(k.OBCIEmitterSample, newSample)
-}
-
 module.exports = Jamar
-
-function interpret24bitAsInt32 (byteArray, index) {
-  // little endian
-  var newInt = (
-    ((0xFF & byteArray[index]) << 16) |
-    ((0xFF & byteArray[index + 1]) << 8) |
-    (0xFF & byteArray[index + 2])
-  )
-  if ((newInt & 0x00800000) > 0) {
-    newInt |= 0xFF000000
-  } else {
-    newInt &= 0x00FFFFFF
-  }
-  return newInt
-}
