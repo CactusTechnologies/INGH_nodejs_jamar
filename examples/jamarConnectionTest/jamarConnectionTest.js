@@ -13,10 +13,7 @@ function errorFunc (err) {
   console.log(err)
 }
 
-const impedance = false
-const accel = false
-
-//OSC STUFF
+/* OSC setup */
 let udpPort = new osc.UDPPort({
     // This is the port we're listening on.
     localAddress: k.OSCLocalAddress,
@@ -27,10 +24,9 @@ let udpPort = new osc.UDPPort({
     remotePort: k.OSCRemotePort,
     metadata: true
 })
-
 udpPort.open()
 
-
+/* Start the function */
 const fullGangFunc = () => {
   console.log('[JAMARCONNECT] running application')
 
@@ -39,7 +35,7 @@ const fullGangFunc = () => {
 
     /* Event Handlers */
 
-    //BLUETOOTH COMES IN, SENT OUT AS OSC
+    // Bluetooth comes in, sent out as OSC
     jamar.on('data', (data) => {
       console.log(`[JAMARCONNECT] DATA: ${data}`)
       let msg = {
@@ -92,8 +88,6 @@ let startFunc = () => {
 
 let stopFunc = () => {
   console.log(`[JAMARCONNECT] disconnecting ${index}`)
-  jamar.removeAllListeners('sample')
-  jamar.removeAllListeners('message')
   jamar.removeAllListeners(k.OBCIEmitterJamarFound)
   jamar.removeAllListeners('ready')
   if (jamar.isConnected()) {
@@ -132,11 +126,6 @@ function exitHandler (options, err) {
     if (verbose) console.log('clean')
     jamar.manualDisconnect = true
     jamar.disconnect()
-    jamar.removeAllListeners('droppedPacket')
-    jamar.removeAllListeners('accelerometer')
-    jamar.removeAllListeners('sample')
-    jamar.removeAllListeners('message')
-    jamar.removeAllListeners('impedance')
     jamar.removeAllListeners('close')
     jamar.removeAllListeners('jamarFound')
     jamar.removeAllListeners('ready')
@@ -145,19 +134,12 @@ function exitHandler (options, err) {
   if (err) console.log(err.stack)
   if (options.exit) {
     if (verbose) console.log('exit')
+
     stopFunc()
-    // clearTimeout(stopTimeout)
-    if (impedance) {
-      jamar.impedanceStop().catch(console.log)
-    }
+
     if (jamar.isSearching()) {
       jamar.searchStop().catch(console.log)
     }
-    if (accel) {
-      jamar.accelStop().catch(console.log)
-    }
-    // jamar.manualDisconnect = true
-    // jamar.disconnect(true).catch(console.log)
   }
 }
 

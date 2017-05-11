@@ -52,7 +52,7 @@ const _options = {
  * @param callback {function} (optional) - A callback function used to determine if the noble module was able to be started.
  *    This can be very useful on Windows when there is no compatible BLE device found.
  * @constructor
- * @author Aaron Arntz
+ * @author AJ Keller, modifed for the Jamar by Aaron Arntz
  */
 function Jamar (options, callback) {
   if (!(this instanceof Jamar)) {
@@ -109,7 +109,6 @@ function Jamar (options, callback) {
   this._lastPacket = null
   this._localName = null
   this._multiPacketBuffer = null
-  this._packetCounter = k.OBCIJamarByteId18Bit.max
   this._peripheral = null
   this._jamarService = null
   this._receiveCharacteristic = null
