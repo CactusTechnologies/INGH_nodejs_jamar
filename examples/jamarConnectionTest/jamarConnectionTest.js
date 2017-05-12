@@ -20,11 +20,14 @@ let udpPort = new osc.UDPPort({
     localPort: k.OSCLocalPort,
 
     // This is the address of the OSC receiver
-    remoteAddress: k.OSCRemoteAddress,
-    remotePort: k.OSCRemotePort,
+    // remoteAddress: k.OSCRemoteAddress,
+    // remotePort: k.OSCRemotePort,
     metadata: true
 })
 udpPort.open()
+// udpPort.on("ready", function () {
+  // console.log('ready udp')
+// })
 
 /* Start the function */
 const fullGangFunc = () => {
@@ -34,7 +37,6 @@ const fullGangFunc = () => {
     console.log('[JAMARCONNECT] connected to jamar...')
 
     /* Event Handlers */
-
     // Bluetooth comes in, sent out as OSC
     jamar.on('data', (data) => {
       console.log(`[JAMARCONNECT] DATA: ${data}`)
@@ -44,11 +46,11 @@ const fullGangFunc = () => {
             {
                 type: "f",
                 value: data
-            }
+            },
         ]
       }
-      console.log("Sending message", msg.address, msg.args, "to", udpPort.options.remoteAddress + ":" + udpPort.options.remotePort)
-      udpPort.send(msg)
+      console.log("Sending message", msg.address, msg.args, "to", "192.168.1.106" + ":" + '8080')
+      udpPort.send(msg, "192.168.1.106", 8080)
     })
 
     jamar.once('ready', () => {

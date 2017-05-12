@@ -37,10 +37,10 @@ const jamarUuidSend = '6e400002b5a3f393e0a9e50e24dcca9e'
 const jamarUuidDisconnect = '2a04'
 
 /* OSC */
-const OSClocalAddress = '127.0.0.1'
+const OSClocalAddress = "0.0.0.0"
 const OSClocalPort = 57121
-const OSCremoteAddress = '127.0.0.1'
-const OSCremotePort = 57119
+const OSCremoteAddress = "192.168.1.106"
+const OSCremotePort = 8080
 
 /** Noble */
 const obciNobleEmitterPeripheralConnect = 'connect';
