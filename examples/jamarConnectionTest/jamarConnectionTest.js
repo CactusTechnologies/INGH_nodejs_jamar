@@ -8,6 +8,7 @@ let jamar = new Jamar({
   nobleScanOnPowerOn: false,
   nobleAutoStart: true
 })
+const WebSocket = require('ws')
 
 function errorFunc (err) {
   console.log(err)
@@ -18,18 +19,42 @@ let udpPort = new osc.UDPPort({
     // This is the port we're listening on.
     localAddress: k.OSCLocalAddress,
     localPort: k.OSCLocalPort,
-
-    // This is the address of the OSC receiver
-    // remoteAddress: k.OSCRemoteAddress,
-    // remotePort: k.OSCRemotePort,
     metadata: true
 })
 udpPort.open()
-// udpPort.on("ready", function () {
-  // console.log('ready udp')
-// })
+udpPort.on("ready", function () {
+  console.log('ready udp')
+})
 
-/* Start the function */
+/* Websockets setup */
+const ws = new WebSocket('ws://192.168.1.224:3030')
+ws.on('open', () => {
+  ws.send('jamar pi websocket connected.')
+})
+
+/* A message received from the tablet over websockets */
+ws.on('message', (data) => {
+      let jsondata = JSON.parse(data) 
+      // console.log(jsondata.msg)
+      switch(jsondata.msg) {
+      case 'strength/start':
+        console.log('got start message')
+        startFunc()
+        break 
+      case 'strength/kill':
+        console.log('got kill message')
+        stopFunc()
+        // exitHandler({
+          // // cleanup: true,
+          // exit: true
+        // })
+        break
+      default:
+       break
+      }
+    })
+
+/* Start the bluetooth function */
 const fullGangFunc = () => {
   console.log('[JAMARCONNECT] running application')
 
@@ -49,8 +74,8 @@ const fullGangFunc = () => {
             },
         ]
       }
-      console.log("Sending message", msg.address, msg.args, "to", "192.168.1.106" + ":" + '8080')
-      udpPort.send(msg, "192.168.1.106", 8080)
+      console.log("Sending message", msg.address, msg.args, "to", "192.168.1.110" + ":" + '8080')
+      udpPort.send(msg, "192.168.1.110", 8080)
     })
 
     jamar.once('ready', () => {
@@ -96,23 +121,12 @@ let stopFunc = () => {
     jamar.manualDisconnect = true
     jamar.disconnect(true)
       .then(() => {
-        if (index === 1) {
           killFunc('finished clean')
-        } else {
-          index++
-          startFunc()
-        }
-      })
+        })
       .catch(killFunc)
-
   } else {
     console.log(`you were never connected on index ${index}`)
-    if (index === 1) {
-      killFunc('failed to connect')
-    } else {
-      index++
-      startFunc()
-    }
+      killFunc('never connected')
   }
 }
 
@@ -121,7 +135,7 @@ let killFunc = (msg) => {
   process.exit(0)
 }
 
-startFunc()
+// startFunc()
 
 function exitHandler (options, err) {
   if (options.cleanup) {
