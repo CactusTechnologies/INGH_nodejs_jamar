@@ -1,0 +1,14 @@
+{
+  "apps" : [{
+    "name"        : "jamar",
+    "script"      : "./app/index.js",
+    "watch"       : true,
+    "env": {
+      "NODE_ENV": "development"
+    },
+    "env_production" : {
+       "NODE_ENV": "production"
+    },
+    "restart_delay": 10000
+  }]
+}

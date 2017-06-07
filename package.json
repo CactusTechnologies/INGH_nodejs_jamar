@@ -26,8 +26,10 @@
     "noble-device": "^1.4.1",
     "osc": "^2.2.0",
     "performance-now": "^0.2.0",
+    "reconnecting-websocket": "^3.0.5",
     "sntp": "^2.0.0",
-    "streamsearch": "^0.1.2"
+    "streamsearch": "^0.1.2",
+    "ws": "^3.0.0"
   },
   "directories": {
     "test": "test"
