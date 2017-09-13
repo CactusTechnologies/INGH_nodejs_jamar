@@ -9,6 +9,6 @@
     "env_production" : {
        "NODE_ENV": "production"
     },
-    "restart_delay": 10000
+    "restart_delay": 2000
   }]
 }

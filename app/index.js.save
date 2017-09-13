@@ -26,14 +26,13 @@ udpPort.on("ready", function () {
 })
 
 /* Websockets setup */
-const ws = new WebSocket('ws://10.0.20.10:3030')
+const ws = new WebSocket('ws://192.168.1.126:3030')
 ws.on('open', () => {
   ws.send('jamar pi websocket connected.')
 })
 
 /* A message received from the tablet over websockets */
 ws.on('message', (data) => {
-      console.log(data)
       let jsondata = JSON.parse(data) 
       // console.log(jsondata.msg)
       switch(jsondata.msg) {
@@ -75,8 +74,8 @@ const fullGangFunc = () => {
             },
         ]
       }
-      console.log("Sending message", msg.address, msg.args, "to", "10.0.20.63" + ":" + '8080')
-      udpPort.send(msg, "10.0.20.63", 8080)
+      console.log("Sending message", msg.address, msg.args, "to", "192.168.1.110" + ":" + '8080')
+      udpPort.send(msg, "192.168.1.110", 8080)
     })
 
     jamar.once('ready', () => {
@@ -106,10 +105,6 @@ const fullGangFunc = () => {
   } else {
     console.log(`[JAMARCONNECT] noble is NOT ready, waiting to start scan...`)
   }
-
-  jamar.once('close', ()=> {
-    stopFunc()
-  })
 }
 
 let index = 0
@@ -140,7 +135,7 @@ let killFunc = (msg) => {
   process.exit(0)
 }
 
-startFunc()
+// startFunc()
 
 function exitHandler (options, err) {
   if (options.cleanup) {

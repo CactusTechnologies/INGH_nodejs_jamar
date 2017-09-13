@@ -273,10 +273,10 @@ Jamar.prototype.searchStart = function (maxSearchTime) {
   const searchTime = maxSearchTime || k.OBCIJamarBleSearchTime
 
   return new Promise((resolve, reject) => {
-    this._searchTimeout = setTimeout(() => {
-      this._nobleScanStop().catch(reject)
-      reject('Timeout: Unable to find Jamar')
-    }, searchTime)
+    // this._searchTimeout = setTimeout(() => {
+      // this._nobleScanStop().catch(reject)
+      // reject('Timeout: Unable to find Jamar')
+    // }, searchTime)
 
     this._nobleScanStart()
       .then(() => {
@@ -284,7 +284,7 @@ Jamar.prototype.searchStart = function (maxSearchTime) {
       })
       .catch((err) => {
         if (err !== k.OBCIErrorNobleAlreadyScanning) { // If it's already scanning
-          clearTimeout(this._searchTimeout)
+          // clearTimeout(this._searchTimeout)
           reject(err)
         }
       })
