@@ -26,7 +26,7 @@ udpPort.on("ready", function () {
 })
 
 /* Websockets setup */
-const ws = new WebSocket('ws://10.0.20.10:3030')
+const ws = new WebSocket('ws://10.0.20.10:3030/jamarPi')
 ws.on('open', () => {
   ws.send('jamar pi websocket connected.')
 })
