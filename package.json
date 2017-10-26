@@ -17,8 +17,11 @@
   "author": "AJ Keller <aj@pushtheworld.us> (www.openbci.com)",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "buffer-equal": "^1.0.0",
     "clone": "^2.0.0",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.1",
     "gaussian": "^1.0.0",
     "lodash": "^4.16.6",
     "mathjs": "^3.3.0",

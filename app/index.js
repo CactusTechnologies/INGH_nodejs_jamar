@@ -2,13 +2,44 @@ const Jamar = require('../index').Jamar
 const k = require('../jamarConstants')
 const osc = require('osc')
 const verbose = true
+
+require('dotenv').config()
+const { HOST, PORT } = process.env
+
 let jamar = new Jamar({
   debug: true,
   verbose: verbose,
   nobleScanOnPowerOn: false,
   nobleAutoStart: true
 })
+
+
+// setup an express server, mainly for status reporting
+const express = require('express')
+const bodyParser = require('body-parser')
+const app = express()
+
+app.set('root', __dirname)
+
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.json())
+app.disable('x-powered-by')
+
+app.use((err, req, res, next) => {
+  console.log('error middleware called')
+  console.error(err);
+  res.status(500).json(err);
+})
+
+app.listen(PORT, function () {
+  console.log(`App listening on port ${PORT}`)
+})
+
+
 const WebSocket = require('ws')
+
+// create a Var for reporting the status
+let deviceConnected = false
 
 function errorFunc (err) {
   console.log(err)
@@ -62,6 +93,8 @@ const fullGangFunc = () => {
   jamar.once(k.OBCIEmitterJamarFound, (peripheral) => {
     console.log('[JAMARCONNECT] connected to jamar...')
 
+    deviceConnected = true
+ 
     /* Event Handlers */
     // Bluetooth comes in, sent out as OSC
     jamar.on('data', (data) => {
@@ -75,7 +108,7 @@ const fullGangFunc = () => {
             },
         ]
       }
-      console.log("Sending message", msg.address, msg.args, "to", "10.0.20.63" + ":" + '8080')
+      console.log("Sending message", msg.address, msg.args, "to", "10.0.20.63" + ":" + '8080') //63
       udpPort.send(msg, "10.0.20.63", 8080)
     })
 
@@ -141,6 +174,16 @@ let killFunc = (msg) => {
 }
 
 startFunc()
+
+// STATUS REPORTING
+app.get('/status', (req,res,next) => {
+	console.log('server requested status-report')
+	let status = {
+		jamarConnected: deviceConnected
+	}
+
+	res.send(status)
+})
 
 function exitHandler (options, err) {
   if (options.cleanup) {
