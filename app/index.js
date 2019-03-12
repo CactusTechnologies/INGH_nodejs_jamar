@@ -1,5 +1,6 @@
 const Jamar = require("../index").Jamar;
 const k = require("../jamarConstants");
+const request = require("request");
 const osc = require("osc");
 const verbose = true;
 
@@ -39,6 +40,8 @@ const WebSocket = require("ws");
 // create a Var for reporting the status
 let deviceConnected = false;
 let highScore = 0;
+let leftScore = 0;
+let rightScore = 0;
 let currentHand = "";
 let shownHighScore = false;
 
@@ -88,10 +91,34 @@ ws.on("message", data => {
       shownHighScore = false;
       break;
 
+    case "strength/fetchResults":
+      console.log(
+        `fetch results called, posting scores to server - LEFT: ${leftScore}, RIGHT: ${rightScore}`
+      );
+      request.post(
+        {
+          url: `http://${process.env.SERVER_HOST}:${
+            process.env.SERVER_PORT
+          }/strength/data`,
+          json: {
+            right: rightScore,
+            left: leftScore
+          }
+        },
+        (err, res, body) => {
+          err
+            ? console.log(err)
+            : console.log("status successfully reported...");
+        }
+      );
+      break;
+
     case "strength/sleep":
       console.log("station going to sleep");
       currentHand = "none";
       highScore = 0;
+      leftScore = 0;
+      rightScore = 0;
       break;
 
     case "strength/kill":
@@ -134,6 +161,8 @@ const fullGangFunc = () => {
       if (highScore - data > 10 && !shownHighScore) {
         console.log(`high score for ${currentHand}: ${highScore}`);
         shownHighScore = true;
+        if (currentHand === "LEFT") leftScore = highScore;
+        else if (currentHand === "RIGHT") rightScore = highScore;
       }
 
       //console.log("Sending message", msg.address, msg.args, "to", "10.0.20.63" + ":" + '8080') //63
@@ -177,6 +206,10 @@ const fullGangFunc = () => {
 let index = 0;
 let startFunc = () => {
   console.log(`[JAMARCONNECT] starting ${index}`);
+  currentHand = "none";
+  highScore = 0;
+  leftScore = 0;
+  rightScore = 0;
   fullGangFunc();
 };
 
