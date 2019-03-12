@@ -40,6 +40,7 @@ const WebSocket = require("ws");
 let deviceConnected = false;
 let highScore = 0;
 let currentHand = "";
+let shownHighScore = false;
 
 function errorFunc(err) {
   console.log(err);
@@ -77,12 +78,14 @@ ws.on("message", data => {
       console.log("starting left hand");
       currentHand = "LEFT";
       highScore = 0;
+      shownHighScore = false;
       break;
 
     case "strength/startRight":
       console.log("starting right hand");
       currentHand = "RIGHT";
       highScore = 0;
+      shownHighScore = false;
       break;
 
     case "strength/sleep":
@@ -116,7 +119,7 @@ const fullGangFunc = () => {
     /* Event Handlers */
     // Bluetooth comes in, sent out as OSC
     jamar.on("data", data => {
-      console.log(`[JAMARCONNECT] DATA: ${data}`);
+      // console.log(`[JAMARCONNECT] DATA: ${data}`);
       let msg = {
         address: "/jamar/data",
         args: [
@@ -128,8 +131,10 @@ const fullGangFunc = () => {
       };
       console.log("value: ", data);
       if (data > highScore) highScore = data;
-      if (highScore - data > 10)
+      if (highScore - data > 10 && !shownHighScore) {
         console.log(`high score for ${currentHand}: ${highScore}`);
+        shownHighScore = true;
+      }
 
       //console.log("Sending message", msg.address, msg.args, "to", "10.0.20.63" + ":" + '8080') //63
       udpPort.send(msg, "10.0.20.63", 8080);
