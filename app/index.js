@@ -129,7 +129,7 @@ const fullGangFunc = () => {
           }
         ]
       };
-      console.log("value: ", data);
+      // console.log("value: ", data);
       if (data > highScore) highScore = data;
       if (highScore - data > 10 && !shownHighScore) {
         console.log(`high score for ${currentHand}: ${highScore}`);
