@@ -1,14 +1,17 @@
 {
-  "apps" : [{
-    "name"        : "jamar",
-    "script"      : "./app/index.js",
-    "watch"       : true,
-    "env": {
-      "NODE_ENV": "development"
-    },
-    "env_production" : {
-       "NODE_ENV": "production"
-    },
-    "restart_delay": 2000
-  }]
+  "apps": [
+    {
+      "name": "jamar",
+      "script": "./app/index.js",
+      "watch": true,
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "env_production": {
+        "NODE_ENV": "production"
+      },
+      "restart_delay": 2000,
+      "log_date_format": "DD-MM-YYYYTHH:mm:ss"
+    }
+  ]
 }
