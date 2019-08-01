@@ -95,6 +95,7 @@ ws.on("message", data => {
       console.log(
         `fetch results called, posting scores to server - LEFT: ${leftScore}, RIGHT: ${rightScore}`
       );
+      
       request.post(
         {
           url: `http://${process.env.SERVER_HOST}:${
@@ -111,6 +112,7 @@ ws.on("message", data => {
             : console.log("status successfully reported...");
         }
       );
+      
       break;
 
     case "strength/sleep":
@@ -165,7 +167,7 @@ const fullGangFunc = () => {
         else if (currentHand === "RIGHT") rightScore = highScore;
       }
 
-      //console.log("Sending message", msg.address, msg.args, "to", "10.0.20.63" + ":" + '8080') //63
+      console.log("Sending message", msg.address, msg.args, "to", "10.0.20.63" + ":" + '8080') //63
       udpPort.send(msg, "10.0.20.63", 8080);
     });
 
